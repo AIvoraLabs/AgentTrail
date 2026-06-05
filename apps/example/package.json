@@ -1,0 +1,21 @@
+{
+  "name": "example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example project showing AgentTrail SDK integration with OpenAI",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@aivoralabs/agenttrail": "workspace:*",
+    "@aivoralabs/agenttrail-openai": "workspace:*",
+    "openai": "^4.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0"
+  }
+}

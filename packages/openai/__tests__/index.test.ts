@@ -65,10 +65,13 @@ describe('wrapOpenAI', () => {
       messages: [{ role: 'user', content: 'Hi' }],
     });
 
-    expect(client.__originalCreate).toHaveBeenCalledWith({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: 'Hi' }],
-    });
+    expect(client.__originalCreate).toHaveBeenCalledWith(
+      {
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: 'Hi' }],
+      },
+      undefined,
+    );
   });
 
   it('should not throw if no messages provided', async () => {
