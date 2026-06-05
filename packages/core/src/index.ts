@@ -9,4 +9,6 @@ export type {
   AuditReceiptConfig,
   ToolCall,
   PolicyCheck,
+  SerializedToolCall,
+  SerializedPolicyCheck,
 } from './types';

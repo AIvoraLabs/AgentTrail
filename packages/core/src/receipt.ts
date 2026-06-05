@@ -6,8 +6,8 @@ import type {
   Interaction,
   AuditReceiptConfig,
   ReceiptPayload,
-  ToolCall,
-  PolicyCheck,
+  SerializedToolCall,
+  SerializedPolicyCheck,
 } from './types';
 
 // Re-export types and verifyChain
@@ -16,8 +16,8 @@ export type {
   Interaction,
   AuditReceiptConfig,
   ReceiptPayload,
-  ToolCall,
-  PolicyCheck,
+  SerializedToolCall,
+  SerializedPolicyCheck,
 };
 export { verifyChain };
 
@@ -58,16 +58,18 @@ export class AuditReceipt {
     const timestampStart = new Date().toISOString();
     const timestampEnd = new Date().toISOString();
 
-    // Map Interaction -> ReceiptPayload
-    const toolCalls = interaction.toolCalls?.map((tc) => ({
-      tool_name: tc.toolName,
-      tool_input: tc.toolInput,
-      tool_output: tc.toolOutput,
-      tool_execution_ms: tc.toolExecutionMs,
-      tool_status: tc.toolStatus as 'success' | 'error',
-    }));
+    // Map camelCase Interaction -> snake_case ReceiptPayload
+    const toolCalls: SerializedToolCall[] | undefined =
+      interaction.toolCalls?.map((tc) => ({
+        tool_name: tc.toolName,
+        tool_input: tc.toolInput,
+        tool_output: tc.toolOutput,
+        tool_execution_ms: tc.toolExecutionMs,
+        tool_status: tc.toolStatus as 'success' | 'error',
+      }));
 
-    const policyCheck = interaction.policyCheck
+    const policyCheck: SerializedPolicyCheck | undefined = interaction
+      .policyCheck
       ? {
           policy_name: interaction.policyCheck.policyName,
           status: interaction.policyCheck.status as 'pass' | 'fail' | 'review',

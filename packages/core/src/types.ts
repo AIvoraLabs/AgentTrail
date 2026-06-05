@@ -1,3 +1,5 @@
+// --- Developer-facing types (camelCase) ---
+
 export interface ToolCall {
   toolName: string;
   toolInput: string;
@@ -8,6 +10,35 @@ export interface ToolCall {
 
 export interface PolicyCheck {
   policyName: string;
+  status: 'pass' | 'fail' | 'review';
+  details?: string;
+}
+
+export interface Interaction {
+  input: string;
+  output: string;
+  model: string;
+  provider: string;
+  tokensPrompt?: number;
+  tokensCompletion?: number;
+  toolCalls?: ToolCall[];
+  policyCheck?: PolicyCheck;
+  humanVerifier?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// --- Serialized types (snake_case, used in JSON payload) ---
+
+export interface SerializedToolCall {
+  tool_name: string;
+  tool_input: string;
+  tool_output: string;
+  tool_execution_ms: number;
+  tool_status: 'success' | 'error';
+}
+
+export interface SerializedPolicyCheck {
+  policy_name: string;
   status: 'pass' | 'fail' | 'review';
   details?: string;
 }
@@ -23,8 +54,8 @@ export interface ReceiptPayload {
   tokens_prompt?: number;
   tokens_completion?: number;
   tokens_total?: number;
-  tool_calls?: ToolCall[];
-  policy_check?: PolicyCheck;
+  tool_calls?: SerializedToolCall[];
+  policy_check?: SerializedPolicyCheck;
   human_verifier?: string;
 }
 
@@ -36,19 +67,6 @@ export interface Receipt {
   hash: string;
   signature: string;
   payload: ReceiptPayload;
-  metadata?: Record<string, unknown>;
-}
-
-export interface Interaction {
-  input: string;
-  output: string;
-  model: string;
-  provider: string;
-  tokensPrompt?: number;
-  tokensCompletion?: number;
-  toolCalls?: ToolCall[];
-  policyCheck?: PolicyCheck;
-  humanVerifier?: string;
   metadata?: Record<string, unknown>;
 }
 
