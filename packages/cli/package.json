@@ -1,0 +1,34 @@
+{
+  "name": "@aivoralabs/agenttrail-cli",
+  "version": "0.1.0",
+  "description": "CLI for AgentTrail audit receipt verification",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "audit-receipt": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --clean",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aivoralabs/agenttrail": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^2.0.0",
+    "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

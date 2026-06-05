@@ -18,6 +18,25 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/cli:
+    dependencies:
+      '@aivoralabs/agenttrail':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.15)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@22.19.20)
+
   packages/core:
     dependencies:
       '@noble/ed25519':
