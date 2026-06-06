@@ -8,13 +8,16 @@
   "bin": {
     "audit-receipt": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --clean",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsup src/index.ts --format esm --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@aivoralabs/agenttrail": "workspace:*"

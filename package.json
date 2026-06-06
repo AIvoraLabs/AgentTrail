@@ -13,12 +13,14 @@
     "clean": "turbo run clean",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "release": "turbo run build && changeset publish",
+    "test:coverage": "turbo run test:coverage"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@vitest/coverage-v8": "^2.1.0",
     "turbo": "^2.0.0",
-    "typescript": "^5.5.0",
-    "@biomejs/biome": "^1.9.0"
+    "typescript": "^5.5.0"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

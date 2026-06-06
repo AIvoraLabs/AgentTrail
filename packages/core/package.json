@@ -1,7 +1,7 @@
 {
   "name": "@aivoralabs/agenttrail",
   "version": "0.1.0",
-  "description": "Compliance receipts for AI agents — EU AI Act Article 12 audit trails",
+  "description": "Compliance receipts for AI agents \u2014 EU AI Act Article 12 audit trails",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,13 +13,16 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsup src/index.ts --format esm --dts --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@noble/ed25519": "^2.2.0",
