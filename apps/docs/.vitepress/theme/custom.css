@@ -1,29 +1,15 @@
 /* =============================================
    AgentTrail — Landing Page Design Tokens & Styles
-   Design System: Ledger — Dark editorial sobrio
+   Design Systems:
+     Ledger   (dark)  — Amber gold + navy black
+     Blueprint (light) — Cream paper + deep navy + rust red
    ============================================= */
 
-/* --- Google Fonts: Bricolage Grotesque + DM Mono --- */
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap');
-
-/* --- Design Tokens --- */
+/* === Shared Root Tokens === */
 :root {
-  --color-bg:       #07090F;
-  --color-surface:  #0E1524;
-  --color-border:   #1B2D4A;
-  --color-accent:   #C59840;
-  --color-link:     #4E8EE8;
-  --color-text:     #E2E7F4;
-  --color-muted:    #576785;
+  color-scheme: light dark;
 
-  --font-display:   'Bricolage Grotesque', sans-serif;
-  --font-mono:      'DM Mono', monospace;
-
-  --radius-sm:  6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-
-  /* --- Spacing (8pt system, kept for layout) --- */
+  /* --- Spacing (8pt system) --- */
   --at-spacing-xs: 8px;
   --at-spacing-sm: 16px;
   --at-spacing-md: 24px;
@@ -31,16 +17,104 @@
   --at-spacing-xl: 48px;
   --at-spacing-2xl: 64px;
   --at-spacing-3xl: 96px;
+}
 
-  /* --- Derived tokens --- */
-  --at-accent-hover:  #D4A84B;
-  --at-accent-muted:  rgba(197, 152, 64, 0.15);
-  --at-surface-hover: #1A2544;
+/* === Blueprint Design Tokens — Light Mode (default + attribute) === */
+:root,
+[data-theme='light'] {
+  --color-bg:       #EEF0E9;
+  --color-surface:  #FAFAF6;
+  --color-border:   #CDD0C6;
+  --color-accent:   #B83422;
+  --color-primary:  #0E1F44;
+  --color-link:         #0E1F44;
+  --color-link-hover:   #1A3A7A;
+  --color-text:         #12140E;
+  --color-muted:        #6B6D64;
 
+  --font-display:   'Barlow Condensed', sans-serif;
+  --font-body:      'Barlow', sans-serif;
+  --font-mono:      'IBM Plex Mono', monospace;
+
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg: 14px;
+
+  /* Derived tokens */
+  --at-accent-hover:     #9A2D1E;
+  --at-accent-muted:     rgba(184, 52, 34, 0.10);
+  --at-surface-hover:    #F0F1E8;
+  --at-accent-shadow-rgb: 184, 52, 34;
+
+  /* VitePress integration */
   --vp-c-bg: var(--color-bg);
   --vp-c-text: var(--color-text);
   --vp-c-brand: var(--color-accent);
   --vp-c-brand-hover: var(--at-accent-hover);
+
+  /* Shiki CSS-variable code syntax tokens */
+  --shiki-color-text: var(--color-text);
+  --shiki-color-background: var(--color-surface);
+  --shiki-token-keyword: var(--color-accent);
+  --shiki-token-string: var(--color-link);
+  --shiki-token-function: var(--color-primary);
+  --shiki-token-comment: var(--color-muted);
+  --shiki-token-constant: var(--color-accent);
+  --shiki-token-parameter: var(--color-text);
+  --shiki-token-number: var(--color-accent);
+  --shiki-token-punctuation: var(--color-muted);
+  --shiki-token-string-expression: var(--color-link);
+}
+
+/* === Ledger Design Tokens — Dark Mode (VitePress class + attribute) === */
+.dark,
+[data-theme='dark'] {
+  --color-bg:       #07090F;
+  --color-surface:  #0E1524;
+  --color-border:   #1B2D4A;
+  --color-accent:   #C59840;
+  --color-link:         #9CC5F5;
+  --color-link-hover:   #C5E0FF;
+  --color-text:         #E2E7F4;
+  --color-muted:        #576785;
+
+  --font-display:   'Bricolage Grotesque', sans-serif;
+  --font-body:      'Bricolage Grotesque', sans-serif;
+  --font-mono:      'DM Mono', monospace;
+
+  --radius-sm:  6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Derived tokens */
+  --at-accent-hover:     #D4A84B;
+  --at-accent-muted:     rgba(197, 152, 64, 0.15);
+  --at-surface-hover:    #1A2544;
+  --at-accent-shadow-rgb: 197, 152, 64;
+
+  /* VitePress integration */
+  --vp-c-bg: var(--color-bg);
+  --vp-c-text: var(--color-text);
+  --vp-c-brand: var(--color-accent);
+  --vp-c-brand-hover: var(--at-accent-hover);
+
+  /* Shiki CSS-variable code syntax tokens */
+  --shiki-color-text: var(--color-text);
+  --shiki-color-background: var(--color-surface);
+  --shiki-token-keyword: var(--color-accent);
+  --shiki-token-string: #98C379;
+  --shiki-token-function: var(--at-accent-hover);
+  --shiki-token-comment: var(--color-muted);
+  --shiki-token-constant: var(--color-accent);
+  --shiki-token-parameter: var(--color-text);
+  --shiki-token-number: var(--at-accent-hover);
+  --shiki-token-punctuation: var(--color-muted);
+  --shiki-token-string-expression: #98C379;
+}
+
+/* --- Transition for smooth theme switching --- */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* --- Base --- */
@@ -56,7 +130,7 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -64,7 +138,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* VitePress overrides for dark-only theme */
+/* VitePress overrides */
 .VPContent {
   background-color: var(--color-bg);
 }
@@ -97,6 +171,13 @@ h1 {
   margin-bottom: var(--at-spacing-md);
 }
 
+/* Light mode h1: uppercase Barlow Condensed with deep navy */
+[data-theme='light'] h1 {
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
 h2 {
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
   letter-spacing: -0.02em;
@@ -110,20 +191,35 @@ h3 {
 }
 
 p, li {
+  font-family: var(--font-body);
   line-height: 1.65;
   color: var(--color-muted);
   max-width: 65ch;
 }
 
-a {
+/* Text links in content areas — visible, underlined */
+.vp-doc a:not(.header-anchor):not(.btn):not(.github-badge):not([class*="btn"]):not([class*="cta"]),
+.content a:not(.btn):not(.github-badge):not([class*="btn"]):not([class*="cta"]),
+main a:not(.btn):not(.github-badge):not([class*="btn"]):not([class*="cta"]) {
   color: var(--color-link);
-  text-decoration: none;
-  transition: color 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s ease;
 }
 
-a:hover {
-  color: var(--color-link);
-  opacity: 0.85;
+.vp-doc a:not(.header-anchor):not(.btn):not(.github-badge):not([class*="btn"]):not([class*="cta"]):hover,
+.content a:not(.btn):not(.github-badge):not([class*="btn"]):not([class*="cta"]):hover,
+main a:not(.btn):not(.github-badge):not([class*="btn"]):not([class*="cta"]):hover {
+  color: var(--color-link-hover);
+  text-decoration-thickness: 2px;
+}
+
+/* Catch-all: buttons and badge links never get underline */
+.btn,
+.github-badge,
+a[class*="cta"] {
+  text-decoration: none !important;
 }
 
 /* --- Layout Utilities --- */
@@ -167,7 +263,7 @@ a:hover {
 .btn-primary:hover {
   background: var(--at-accent-hover);
   color: var(--color-bg);
-  box-shadow: 0 4px 12px rgba(197, 152, 64, 0.35);
+  box-shadow: 0 4px 12px rgba(var(--at-accent-shadow-rgb), 0.35);
   transform: translateY(-1px);
 }
 
@@ -229,6 +325,13 @@ a:hover {
   background: var(--at-accent-muted);
   margin-bottom: var(--at-spacing-md);
   user-select: none;
+}
+
+/* Light mode badge: deep navy tones per Blueprint spec */
+[data-theme='light'] .hero .badge {
+  color: var(--color-primary);
+  background: rgba(14, 31, 68, 0.07);
+  border: 1px solid rgba(14, 31, 68, 0.18);
 }
 
 .hero .badge svg {
@@ -356,11 +459,11 @@ a:hover {
 
 .pricing-card.recommended {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent), 0 8px 30px rgba(197, 152, 64, 0.1);
+  box-shadow: 0 0 0 1px var(--color-accent), 0 8px 30px rgba(var(--at-accent-shadow-rgb), 0.1);
 }
 
 .pricing-card.recommended:hover {
-  box-shadow: 0 0 0 1px var(--color-accent), 0 12px 40px rgba(197, 152, 64, 0.15);
+  box-shadow: 0 0 0 1px var(--color-accent), 0 12px 40px rgba(var(--at-accent-shadow-rgb), 0.15);
 }
 
 .pricing-card .recommended-badge {
@@ -594,7 +697,7 @@ a:hover {
 
 .vp-doc [class*='language-'] code {
   font-family: var(--font-mono);
-  color: #7CA0CC;
+  color: var(--color-text);
 }
 
 /* --- VitePress Override: hide default sidebar/nav on landing --- */
