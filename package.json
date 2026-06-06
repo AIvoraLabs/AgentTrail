@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
+    "@changesets/cli": "^2.29.0",
     "@vitest/coverage-v8": "^2.1.0",
     "turbo": "^2.0.0",
     "typescript": "^5.5.0"
