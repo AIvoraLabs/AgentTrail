@@ -25,6 +25,9 @@
     "clean": {
       "cache": false
     },
+    "docs:build": {
+      "outputs": ["apps/docs/.vitepress/dist/**"]
+    },
     "lint": {
       "outputs": []
     },
