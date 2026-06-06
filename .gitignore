@@ -27,6 +27,9 @@ audit-logs/
 # Turbo
 .turbo/
 
+# Astro
+**/.astro/
+
 # Coverage
 coverage/
 
