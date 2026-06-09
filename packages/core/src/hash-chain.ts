@@ -36,10 +36,24 @@ export async function chainHash(
 }
 
 /**
- * Serialize an object to canonical JSON (sorted keys) for deterministic hashing.
+ * Serialize a value to canonical JSON (sorted keys) for deterministic hashing.
+ *
+ * Recursively sorts object keys so that nested objects and arrays of objects
+ * produce deterministic output regardless of insertion order.
  */
-export function canonicalJSON(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj, Object.keys(obj).sort());
+export function canonicalJSON(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalJSON).join(',')}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const keys = Object.keys(value as Record<string, unknown>).sort();
+    const pairs = keys.map(
+      (k) =>
+        `${JSON.stringify(k)}:${canonicalJSON((value as Record<string, unknown>)[k])}`,
+    );
+    return `{${pairs.join(',')}}`;
+  }
+  return JSON.stringify(value);
 }
 
 /**
