@@ -57,6 +57,9 @@ export interface ReceiptPayload {
   tool_calls?: SerializedToolCall[];
   policy_check?: SerializedPolicyCheck;
   human_verifier?: string;
+  monotonic_ns?: string;
+  clock_drift_detected?: boolean;
+  key_id?: string;
 }
 
 export interface Receipt {
@@ -70,9 +73,42 @@ export interface Receipt {
   metadata?: Record<string, unknown>;
 }
 
+export type ComplianceMode = 'strict' | 'permissive';
+
+export interface ComplianceConfig {
+  mode?: ComplianceMode;
+  onComplianceError?: (error: Error) => void;
+}
+
+export interface KeyEntry {
+  publicKey: string;
+  activatedAt: string;
+  keyId: string;
+}
+
+export interface RedactRule {
+  pattern: RegExp;
+  replacement?: string;
+}
+
+export interface RedactConfig {
+  rules?: RedactRule[];
+  hashInput?: boolean;
+}
+
+export interface TimestampResult {
+  iso: string;
+  monotonic_ns: string;
+  drift_detected: boolean;
+}
+
 export interface AuditReceiptConfig {
   agentId: string;
   version?: string;
   privateKey?: string;
   publicKey?: string;
+  complianceConfig?: ComplianceConfig;
+  redactConfig?: RedactConfig;
+  driftThresholdMs?: number;
+  maxKeys?: number;
 }
