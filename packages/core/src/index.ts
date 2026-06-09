@@ -11,4 +11,10 @@ export type {
   PolicyCheck,
   SerializedToolCall,
   SerializedPolicyCheck,
+  ComplianceMode,
+  ComplianceConfig,
+  KeyEntry,
+  RedactRule,
+  RedactConfig,
+  TimestampResult,
 } from './types';
