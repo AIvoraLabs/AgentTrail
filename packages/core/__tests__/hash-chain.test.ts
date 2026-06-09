@@ -50,6 +50,72 @@ describe('hash-chain', () => {
     });
   });
 
+  describe('canonicalJSON', () => {
+    it('should sort nested object keys recursively', () => {
+      const input = { z: { b: 2, a: 1 } };
+      const result = canonicalJSON(input);
+      // Expected: outer keys sorted (z), inner keys sorted (a, b)
+      expect(result).toBe('{"z":{"a":1,"b":2}}');
+    });
+
+    it('should sort keys within each array element independently', () => {
+      const input = [{ b: 1 }, { a: 2 }];
+      const result = canonicalJSON(input);
+      expect(result).toBe('[{"b":1},{"a":2}]');
+    });
+
+    it('should produce deterministic output for same data with different insertion order', () => {
+      const objA = { z: 1, a: 2, m: { b: 3, c: 4 } };
+      // Same data, constructed in different order
+      const objB: Record<string, unknown> = {};
+      objB.a = 2;
+      objB.m = { c: 4, b: 3 };
+      objB.z = 1;
+
+      expect(canonicalJSON(objA)).toBe(canonicalJSON(objB));
+    });
+
+    it('should handle arrays of complex nested objects deterministically', () => {
+      const arr1 = [
+        { name: 'b', data: { x: 10, y: 20 } },
+        { name: 'a', data: { q: 30, p: 40 } },
+      ];
+      const arr2 = [
+        { name: 'b', data: { y: 20, x: 10 } },
+        { name: 'a', data: { p: 40, q: 30 } },
+      ];
+      expect(canonicalJSON(arr1)).toBe(canonicalJSON(arr2));
+    });
+
+    it('should produce the same hash for deep payloads with different insertion order', async () => {
+      const payload1 = {
+        input: 'hello',
+        output: 'world',
+        model: 'gpt-4o',
+        provider: 'openai',
+        metadata: { b: 2, a: 1 },
+      };
+
+      const payload2: Record<string, unknown> = {
+        provider: 'openai',
+        model: 'gpt-4o',
+        output: 'world',
+        input: 'hello',
+        metadata: { a: 1, b: 2 },
+      };
+
+      const canon1 = canonicalJSON(payload1);
+      const canon2 = canonicalJSON(payload2);
+      expect(canon1).toBe(canon2);
+
+      // Verify that the hashes also match
+      const prevHash = 'a'.repeat(64);
+      const hash1 = await chainHash(prevHash, canon1);
+      const hash2 = await chainHash(prevHash, canon2);
+      expect(hash1).toBe(hash2);
+    });
+  });
+
   describe('verifyChain', () => {
     it('should verify a valid chain of receipts', async () => {
       const receipts: Receipt[] = [
