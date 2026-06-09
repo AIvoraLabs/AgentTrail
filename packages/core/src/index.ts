@@ -1,3 +1,5 @@
+export * from './errors.js';
+export * from './validate.js';
 export { AuditReceipt } from './receipt';
 export { verifyChain } from './hash-chain';
 export { generateKeyPair, sign, verify } from './signer';
