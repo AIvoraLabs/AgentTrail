@@ -12,23 +12,17 @@ export function validateInteraction(input: unknown): asserts input is Interactio
   }
 
   if (typeof input !== 'object') {
-    throw new TypeError(
-      `Expected object for Interaction, got ${typeof input}`,
-    );
+    throw new TypeError(`Expected object for Interaction, got ${typeof input}`);
   }
 
   const obj = input as Record<string, unknown>;
 
   if (typeof obj.model !== 'string' || obj.model.length === 0) {
-    throw new TypeError(
-      'Interaction.model must be a non-empty string',
-    );
+    throw new TypeError('Interaction.model must be a non-empty string');
   }
 
   if (typeof obj.provider !== 'string' || obj.provider.length === 0) {
-    throw new TypeError(
-      'Interaction.provider must be a non-empty string',
-    );
+    throw new TypeError('Interaction.provider must be a non-empty string');
   }
 }
 

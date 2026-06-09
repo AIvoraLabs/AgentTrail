@@ -21,10 +21,7 @@ export async function generateKeyPair(): Promise<{
  * Sign a hash with the given private key.
  * Returns a base64-encoded Ed25519 signature.
  */
-export async function sign(
-  hash: string,
-  privateKeyBase64: string,
-): Promise<string> {
+export async function sign(hash: string, privateKeyBase64: string): Promise<string> {
   const privateKey = base64ToBytes(privateKeyBase64);
   const hashBytes = new TextEncoder().encode(hash);
   const signature = await ed.signAsync(hashBytes, privateKey);

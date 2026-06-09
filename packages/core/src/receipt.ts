@@ -1,13 +1,13 @@
 import { v7 as uuidv7 } from 'uuid';
-import { createGenesisHash, chainHash, canonicalJSON, verifyChain } from './hash-chain';
+import { canonicalJSON, chainHash, createGenesisHash, verifyChain } from './hash-chain';
 import { generateKeyPair, sign } from './signer';
 import type {
-  Receipt,
-  Interaction,
   AuditReceiptConfig,
+  Interaction,
+  Receipt,
   ReceiptPayload,
-  SerializedToolCall,
   SerializedPolicyCheck,
+  SerializedToolCall,
 } from './types';
 
 // Re-export types and verifyChain
@@ -59,17 +59,15 @@ export class AuditReceipt {
     const timestampEnd = new Date().toISOString();
 
     // Map camelCase Interaction -> snake_case ReceiptPayload
-    const toolCalls: SerializedToolCall[] | undefined =
-      interaction.toolCalls?.map((tc) => ({
-        tool_name: tc.toolName,
-        tool_input: tc.toolInput,
-        tool_output: tc.toolOutput,
-        tool_execution_ms: tc.toolExecutionMs,
-        tool_status: tc.toolStatus as 'success' | 'error',
-      }));
+    const toolCalls: SerializedToolCall[] | undefined = interaction.toolCalls?.map((tc) => ({
+      tool_name: tc.toolName,
+      tool_input: tc.toolInput,
+      tool_output: tc.toolOutput,
+      tool_execution_ms: tc.toolExecutionMs,
+      tool_status: tc.toolStatus as 'success' | 'error',
+    }));
 
-    const policyCheck: SerializedPolicyCheck | undefined = interaction
-      .policyCheck
+    const policyCheck: SerializedPolicyCheck | undefined = interaction.policyCheck
       ? {
           policy_name: interaction.policyCheck.policyName,
           status: interaction.policyCheck.status as 'pass' | 'fail' | 'review',
@@ -92,13 +90,8 @@ export class AuditReceipt {
     if (interaction.tokensCompletion !== undefined) {
       payload.tokens_completion = interaction.tokensCompletion;
     }
-    if (
-      interaction.tokensPrompt !== undefined ||
-      interaction.tokensCompletion !== undefined
-    ) {
-      payload.tokens_total =
-        (interaction.tokensPrompt ?? 0) +
-        (interaction.tokensCompletion ?? 0);
+    if (interaction.tokensPrompt !== undefined || interaction.tokensCompletion !== undefined) {
+      payload.tokens_total = (interaction.tokensPrompt ?? 0) + (interaction.tokensCompletion ?? 0);
     }
     if (toolCalls && toolCalls.length > 0) {
       payload.tool_calls = toolCalls;
@@ -111,9 +104,7 @@ export class AuditReceipt {
     }
 
     // Compute hash chain
-    const canonicalPayload = canonicalJSON(
-      payload as unknown as Record<string, unknown>,
-    );
+    const canonicalPayload = canonicalJSON(payload as unknown as Record<string, unknown>);
 
     let hash: string;
     let prevHash: string | null;
@@ -166,16 +157,12 @@ export class AuditReceipt {
 
     if (range?.start) {
       const startMs = range.start.getTime();
-      filtered = filtered.filter(
-        (r) => new Date(r.payload.timestamp_start).getTime() >= startMs,
-      );
+      filtered = filtered.filter((r) => new Date(r.payload.timestamp_start).getTime() >= startMs);
     }
 
     if (range?.end) {
       const endMs = range.end.getTime();
-      filtered = filtered.filter(
-        (r) => new Date(r.payload.timestamp_end).getTime() <= endMs,
-      );
+      filtered = filtered.filter((r) => new Date(r.payload.timestamp_end).getTime() <= endMs);
     }
 
     return filtered;

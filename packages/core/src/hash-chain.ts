@@ -28,10 +28,7 @@ export async function createGenesisHash(timestamp: string): Promise<string> {
  * Chain a new hash from the previous hash and the canonical payload.
  * H_i = SHA256(H_(i-1) || P_i)
  */
-export async function chainHash(
-  prevHash: string,
-  canonicalPayload: string,
-): Promise<string> {
+export async function chainHash(prevHash: string, canonicalPayload: string): Promise<string> {
   return sha256(`${prevHash}${canonicalPayload}`);
 }
 
@@ -48,8 +45,7 @@ export function canonicalJSON(value: unknown): string {
   if (value !== null && typeof value === 'object') {
     const keys = Object.keys(value as Record<string, unknown>).sort();
     const pairs = keys.map(
-      (k) =>
-        `${JSON.stringify(k)}:${canonicalJSON((value as Record<string, unknown>)[k])}`,
+      (k) => `${JSON.stringify(k)}:${canonicalJSON((value as Record<string, unknown>)[k])}`,
     );
     return `{${pairs.join(',')}}`;
   }
@@ -70,9 +66,7 @@ export async function verifyChain(receipts: Receipt[]): Promise<boolean> {
     // Genesis: prev_hash must be null
     if (isGenesis) {
       if (receipt.prev_hash !== null) return false;
-      const genesisHash = await createGenesisHash(
-        receipt.payload.timestamp_start,
-      );
+      const genesisHash = await createGenesisHash(receipt.payload.timestamp_start);
       const expectedHash = await chainHash(
         genesisHash,
         canonicalJSON(receipt.payload as unknown as Record<string, unknown>),

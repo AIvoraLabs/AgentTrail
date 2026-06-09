@@ -48,8 +48,4 @@ export class ClockError extends Error {
 }
 
 /** Union type of all AgentTrail error classes. */
-export type AgentTrailError =
-  | ComplianceError
-  | SignatureError
-  | ChainError
-  | ClockError;
+export type AgentTrailError = ComplianceError | SignatureError | ChainError | ClockError;
