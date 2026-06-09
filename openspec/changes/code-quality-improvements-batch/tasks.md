@@ -16,12 +16,12 @@
 ### PR 1: Foundation + Bug Fixes (~150 lines)
 Targets: tracker/code-quality-improvements-batch
 
-- [ ] 1.1 Create `packages/core/src/errors.ts` — 4 typed error classes
-- [ ] 1.2 Add new types to `packages/core/src/types.ts`
-- [ ] 1.3 Create `packages/core/src/validate.ts`
-- [ ] 1.4 Fix `canonicalJSON` in `packages/core/src/hash-chain.ts`
-- [ ] 2.1 Fix `bytesToBase64` in `packages/core/src/signer.ts`
-- [ ] 2.2 Write tests for BF-1 and BF-2
+- [x] 1.1 Create `packages/core/src/errors.ts` — 4 typed error classes
+- [x] 1.2 Add new types to `packages/core/src/types.ts`
+- [x] 1.3 Create `packages/core/src/validate.ts`
+- [x] 1.4 Fix `canonicalJSON` in `packages/core/src/hash-chain.ts`
+- [x] 2.1 Fix `bytesToBase64` in `packages/core/src/signer.ts`
+- [x] 2.2 Write tests for BF-1 and BF-2
 
 ### PR 2: New Features (~180 lines)
 Targets: PR 1 branch
@@ -37,7 +37,7 @@ Targets: PR 2 branch
 - [ ] 4.1 Integrate SecureClock + PII into `receipt.ts`
 - [ ] 4.2 Add ComplianceMode to `packages/vercel-ai/src/index.ts`
 - [ ] 4.3 Add ComplianceMode to `packages/openai/src/index.ts`
-- [ ] 4.4 Export new modules from `packages/core/src/index.ts`
+- [x] 4.4 Export new modules from `packages/core/src/index.ts`
 - [ ] 4.5 Write integration tests
 - [ ] 5.1 Run `pnpm test`
 - [ ] 5.2 Run `tsc --noEmit`
