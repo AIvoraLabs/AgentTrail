@@ -1,14 +1,25 @@
 import { v7 as uuidv7 } from 'uuid';
-import { canonicalJSON, chainHash, createGenesisHash, verifyChain } from './hash-chain';
-import { generateKeyPair, sign } from './signer';
+import {
+  canonicalJSON,
+  chainHash,
+  computeHash,
+  createGenesisHash,
+  verifyChain,
+} from './hash-chain';
+import { redactPII } from './redact';
+import { computeKeyId, generateKeyPair, sign } from './signer';
+import { SecureClock } from './timestamp';
 import type {
   AuditReceiptConfig,
+  ComplianceConfig,
   Interaction,
   Receipt,
   ReceiptPayload,
+  RedactConfig,
   SerializedPolicyCheck,
   SerializedToolCall,
 } from './types';
+import { validateInteraction, validateKeyMaterial } from './validate';
 
 // Re-export types and verifyChain
 export type {
@@ -29,6 +40,9 @@ export class AuditReceipt {
   private publicKey: string;
   private privateKey: string;
   private keyPairGenerated = false;
+  private secureClock: SecureClock;
+  private redactConfig?: RedactConfig;
+  private complianceConfig?: ComplianceConfig;
 
   constructor(config: AuditReceiptConfig) {
     this.agentId = config.agentId;
@@ -36,8 +50,12 @@ export class AuditReceipt {
     this.publicKey = config.publicKey ?? '';
     this.privateKey = config.privateKey ?? '';
     if (config.publicKey && config.privateKey) {
+      validateKeyMaterial({ publicKey: config.publicKey, privateKey: config.privateKey });
       this.keyPairGenerated = true;
     }
+    this.secureClock = new SecureClock(config.driftThresholdMs);
+    this.redactConfig = config.redactConfig;
+    this.complianceConfig = config.complianceConfig;
   }
 
   private async ensureKeyPair(): Promise<void> {
@@ -53,90 +71,120 @@ export class AuditReceipt {
    * Record a single interaction and return the generated receipt.
    */
   async record(interaction: Interaction): Promise<Receipt> {
-    await this.ensureKeyPair();
+    validateInteraction(interaction);
 
-    const timestampStart = new Date().toISOString();
-    const timestampEnd = new Date().toISOString();
+    try {
+      await this.ensureKeyPair();
 
-    // Map camelCase Interaction -> snake_case ReceiptPayload
-    const toolCalls: SerializedToolCall[] | undefined = interaction.toolCalls?.map((tc) => ({
-      tool_name: tc.toolName,
-      tool_input: tc.toolInput,
-      tool_output: tc.toolOutput,
-      tool_execution_ms: tc.toolExecutionMs,
-      tool_status: tc.toolStatus as 'success' | 'error',
-    }));
+      // Use SecureClock for monotonic timestamps with drift detection
+      const tsStart = this.secureClock.now();
 
-    const policyCheck: SerializedPolicyCheck | undefined = interaction.policyCheck
-      ? {
-          policy_name: interaction.policyCheck.policyName,
-          status: interaction.policyCheck.status as 'pass' | 'fail' | 'review',
-          details: interaction.policyCheck.details,
+      // Apply PII redaction if configured
+      let finalInput = interaction.input;
+      let inputHash: string | undefined;
+
+      if (this.redactConfig) {
+        const redacted = redactPII(interaction.input, this.redactConfig);
+        finalInput = redacted;
+        inputHash = await computeHash(redacted);
+      }
+
+      const tsEnd = this.secureClock.now();
+
+      // Map camelCase Interaction -> snake_case ReceiptPayload
+      const toolCalls: SerializedToolCall[] | undefined = interaction.toolCalls?.map((tc) => ({
+        tool_name: tc.toolName,
+        tool_input: tc.toolInput,
+        tool_output: tc.toolOutput,
+        tool_execution_ms: tc.toolExecutionMs,
+        tool_status: tc.toolStatus as 'success' | 'error',
+      }));
+
+      const policyCheck: SerializedPolicyCheck | undefined = interaction.policyCheck
+        ? {
+            policy_name: interaction.policyCheck.policyName,
+            status: interaction.policyCheck.status as 'pass' | 'fail' | 'review',
+            details: interaction.policyCheck.details,
+          }
+        : undefined;
+
+      const payload: ReceiptPayload = {
+        timestamp_start: tsStart.iso,
+        timestamp_end: tsEnd.iso,
+        input: finalInput,
+        input_hash: inputHash,
+        output: interaction.output,
+        model: interaction.model,
+        provider: interaction.provider,
+        monotonic_ns: tsStart.monotonic_ns,
+        clock_drift_detected: tsStart.drift_detected || tsEnd.drift_detected,
+        key_id: computeKeyId(this.publicKey),
+      };
+
+      if (interaction.tokensPrompt !== undefined) {
+        payload.tokens_prompt = interaction.tokensPrompt;
+      }
+      if (interaction.tokensCompletion !== undefined) {
+        payload.tokens_completion = interaction.tokensCompletion;
+      }
+      if (interaction.tokensPrompt !== undefined || interaction.tokensCompletion !== undefined) {
+        payload.tokens_total =
+          (interaction.tokensPrompt ?? 0) + (interaction.tokensCompletion ?? 0);
+      }
+      if (toolCalls && toolCalls.length > 0) {
+        payload.tool_calls = toolCalls;
+      }
+      if (policyCheck) {
+        payload.policy_check = policyCheck;
+      }
+      if (interaction.humanVerifier) {
+        payload.human_verifier = interaction.humanVerifier;
+      }
+
+      // Compute hash chain
+      const canonicalPayload = canonicalJSON(payload as unknown as Record<string, unknown>);
+
+      let hash: string;
+      let prevHash: string | null;
+
+      if (this.lastHash === null) {
+        // Genesis receipt
+        const genesisHash = await createGenesisHash(tsStart.iso);
+        hash = await chainHash(genesisHash, canonicalPayload);
+        prevHash = null;
+      } else {
+        hash = await chainHash(this.lastHash, canonicalPayload);
+        prevHash = this.lastHash;
+      }
+
+      // Sign the hash
+      const signature = await sign(hash, this.privateKey);
+
+      const receipt: Receipt = {
+        receipt_id: uuidv7(),
+        agent_id: this.agentId,
+        version: this.version,
+        prev_hash: prevHash,
+        hash,
+        signature,
+        payload,
+        metadata: interaction.metadata,
+      };
+
+      this.receipts.push(receipt);
+      this.lastHash = hash;
+
+      return receipt;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      if (this.complianceConfig?.mode === 'permissive') {
+        if (this.complianceConfig.onComplianceError) {
+          this.complianceConfig.onComplianceError(error);
         }
-      : undefined;
-
-    const payload: ReceiptPayload = {
-      timestamp_start: timestampStart,
-      timestamp_end: timestampEnd,
-      input: interaction.input,
-      output: interaction.output,
-      model: interaction.model,
-      provider: interaction.provider,
-    };
-
-    if (interaction.tokensPrompt !== undefined) {
-      payload.tokens_prompt = interaction.tokensPrompt;
+        console.warn(`[AgentTrail] Compliance warning: ${error.message}`);
+      }
+      throw error;
     }
-    if (interaction.tokensCompletion !== undefined) {
-      payload.tokens_completion = interaction.tokensCompletion;
-    }
-    if (interaction.tokensPrompt !== undefined || interaction.tokensCompletion !== undefined) {
-      payload.tokens_total = (interaction.tokensPrompt ?? 0) + (interaction.tokensCompletion ?? 0);
-    }
-    if (toolCalls && toolCalls.length > 0) {
-      payload.tool_calls = toolCalls;
-    }
-    if (policyCheck) {
-      payload.policy_check = policyCheck;
-    }
-    if (interaction.humanVerifier) {
-      payload.human_verifier = interaction.humanVerifier;
-    }
-
-    // Compute hash chain
-    const canonicalPayload = canonicalJSON(payload as unknown as Record<string, unknown>);
-
-    let hash: string;
-    let prevHash: string | null;
-
-    if (this.lastHash === null) {
-      // Genesis receipt
-      const genesisHash = await createGenesisHash(timestampStart);
-      hash = await chainHash(genesisHash, canonicalPayload);
-      prevHash = null;
-    } else {
-      hash = await chainHash(this.lastHash, canonicalPayload);
-      prevHash = this.lastHash;
-    }
-
-    // Sign the hash
-    const signature = await sign(hash, this.privateKey);
-
-    const receipt: Receipt = {
-      receipt_id: uuidv7(),
-      agent_id: this.agentId,
-      version: this.version,
-      prev_hash: prevHash,
-      hash,
-      signature,
-      payload,
-      metadata: interaction.metadata,
-    };
-
-    this.receipts.push(receipt);
-    this.lastHash = hash;
-
-    return receipt;
   }
 
   /**
