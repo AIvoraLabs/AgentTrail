@@ -26,10 +26,10 @@ Targets: tracker/code-quality-improvements-batch
 ### PR 2: New Features (~180 lines)
 Targets: PR 1 branch
 
-- [ ] 3.1 Create `packages/core/src/timestamp.ts` — SecureClock
-- [ ] 3.2 Create `packages/core/src/redact.ts` — PII redaction
-- [ ] 3.3 Add key rotation to `packages/core/src/signer.ts`
-- [ ] 3.4 Write tests for SecureClock, PII, key rotation
+- [x] 3.1 Create `packages/core/src/timestamp.ts` — SecureClock
+- [x] 3.2 Create `packages/core/src/redact.ts` — PII redaction
+- [x] 3.3 Add key rotation to `packages/core/src/signer.ts`
+- [x] 3.4 Write tests for SecureClock, PII, key rotation
 
 ### PR 3: Integration + Middleware + Tests (~140 lines)
 Targets: PR 2 branch
