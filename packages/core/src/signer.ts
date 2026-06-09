@@ -50,7 +50,8 @@ export async function verify(
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes));
+  // Use Array.from to avoid spread operator RangeError on large arrays
+  return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(''));
 }
 
 function base64ToBytes(base64: string): Uint8Array {

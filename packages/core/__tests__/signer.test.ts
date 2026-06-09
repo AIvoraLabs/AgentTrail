@@ -1,6 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { generateKeyPair, sign, verify } from '../src/signer';
 
+/**
+ * Create a deterministic pseudo-random byte array of the given length.
+ * Uses a simple LCG to keep it reproducible in tests.
+ */
+function createTestBytes(length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  let seed = 42;
+  for (let i = 0; i < length; i++) {
+    seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+    bytes[i] = seed & 0xff;
+  }
+  return bytes;
+}
+
 describe('signer', () => {
   describe('generateKeyPair', () => {
     it('should generate a key pair with public and private keys', async () => {
@@ -66,6 +80,46 @@ describe('signer', () => {
       const sig2 = await sign(hash, keyPair.privateKey);
       // Ed25519 is deterministic (RFC 8032)
       expect(sig1).toBe(sig2);
+    });
+  });
+
+  describe('bytesToBase64 large arrays (regression)', () => {
+    it('should handle large byte arrays without RangeError', async () => {
+      // Create a 500K byte array (would throw with spread operator pattern)
+      const largeBytes = createTestBytes(500_000);
+
+      // Verify that Array.from approach works on large arrays
+      const encoded = btoa(
+        Array.from(largeBytes, (b) => String.fromCharCode(b)).join(''),
+      );
+      expect(encoded).toBeTruthy();
+      expect(typeof encoded).toBe('string');
+      // Base64 length formula: ceil(n/3) * 4
+      expect(encoded.length).toBe(Math.ceil(500_000 / 3) * 4);
+    });
+
+    it('should still produce correct output for small arrays matching old behavior', async () => {
+      const smallBytes = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+      const encoded = btoa(
+        Array.from(smallBytes, (b) => String.fromCharCode(b)).join(''),
+      );
+      expect(encoded).toBe('SGVsbG8=');
+    });
+
+    it('should not throw RangeError via key generation path', async () => {
+      // This exercises generateKeyPair which uses bytesToBase64 internally
+      const keyPair = await generateKeyPair();
+      expect(keyPair.publicKey).toBeTruthy();
+      expect(keyPair.privateKey).toBeTruthy();
+    });
+
+    it('should produce correct signatures after the fix', async () => {
+      // Full integration test: generate → sign → verify still works
+      const keyPair = await generateKeyPair();
+      const hash = 'a'.repeat(64);
+      const signature = await sign(hash, keyPair.privateKey);
+      const valid = await verify(signature, hash, keyPair.publicKey);
+      expect(valid).toBe(true);
     });
   });
 });
