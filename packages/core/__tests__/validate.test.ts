@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateInteraction, validateKeyMaterial } from '../src/validate';
+import { validateInteraction, validateKeyMaterial, validateMetadata } from '../src/validate';
 import type { Interaction } from '../src/types';
 
 describe('validateInteraction', () => {
@@ -171,5 +171,92 @@ describe('validateKeyMaterial', () => {
         privateKey: 'def456',
       }),
     ).toThrow('publicKey must be a non-empty string');
+  });
+});
+
+describe('validateMetadata', () => {
+  it('should reject __proto__ injection', () => {
+    // JSON.parse is required because object literal __proto__ triggers the prototype setter,
+    // not an own property — JSON.parse creates a true data property as an attacker would
+    const meta = JSON.parse('{"__proto__":{"admin":true}}');
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject constructor key', () => {
+    const meta = { constructor: { admin: true } };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject prototype key', () => {
+    const meta = { prototype: { polluted: true } };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject metadata with more than 50 top-level keys', () => {
+    const meta: Record<string, number> = {};
+    for (let i = 0; i < 60; i++) {
+      meta[`key${i}`] = i;
+    }
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject nesting depth greater than 4', () => {
+    const meta = {
+      a: {
+        b: {
+          c: {
+            d: {
+              e: 'too deep',
+            },
+          },
+        },
+      },
+    };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject function values', () => {
+    const meta = { fn: () => 'evil' };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject string longer than 1000 characters', () => {
+    const meta = { longString: 'x'.repeat(1001) };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject array with more than 100 items', () => {
+    const meta = { bigArray: new Array(150).fill('item') };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should pass valid metadata', () => {
+    const meta = {
+      userId: 'usr_123',
+      sessionId: 456,
+      isActive: true,
+      tags: ['a', 'b'],
+      nested: { key: 'value' },
+      empty: null,
+    };
+    expect(() => validateMetadata(meta)).not.toThrow();
+  });
+
+  it('should pass through undefined metadata', () => {
+    expect(() => validateMetadata(undefined)).not.toThrow();
+  });
+
+  it('should pass through null metadata', () => {
+    expect(() => validateMetadata(null)).not.toThrow();
+  });
+
+  it('should reject symbol values', () => {
+    const meta = { sym: Symbol('hidden') };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
+  });
+
+  it('should reject BigInt values', () => {
+    const meta = { big: BigInt(9007199254740991) };
+    expect(() => validateMetadata(meta)).toThrow(TypeError);
   });
 });

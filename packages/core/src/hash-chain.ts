@@ -17,6 +17,13 @@ async function sha256(input: string): Promise<string> {
 }
 
 /**
+ * Compute SHA-256 hash of arbitrary input text.
+ */
+export async function computeHash(input: string): Promise<string> {
+  return sha256(input);
+}
+
+/**
  * Create the genesis hash H_0 for a chain.
  * H_0 = SHA256("AGENT_AUDIT_RECEIPT_V1" || genesis_timestamp)
  */

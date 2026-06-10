@@ -1,4 +1,5 @@
 import { v7 as uuidv7 } from 'uuid';
+import { ComplianceError } from './errors';
 import {
   canonicalJSON,
   chainHash,
@@ -8,6 +9,7 @@ import {
 } from './hash-chain';
 import { redactPII } from './redact';
 import { computeKeyId, generateKeyPair, sign } from './signer';
+import type { StorageBackend } from './storage';
 import { SecureClock } from './timestamp';
 import type {
   AuditReceiptConfig,
@@ -19,7 +21,7 @@ import type {
   SerializedPolicyCheck,
   SerializedToolCall,
 } from './types';
-import { validateInteraction, validateKeyMaterial } from './validate';
+import { validateInteraction, validateKeyMaterial, validateMetadata } from './validate';
 
 // Re-export types and verifyChain
 export type {
@@ -43,6 +45,7 @@ export class AuditReceipt {
   private secureClock: SecureClock;
   private redactConfig?: RedactConfig;
   private complianceConfig?: ComplianceConfig;
+  private storage?: StorageBackend;
 
   constructor(config: AuditReceiptConfig) {
     this.agentId = config.agentId;
@@ -56,6 +59,7 @@ export class AuditReceipt {
     this.secureClock = new SecureClock(config.driftThresholdMs);
     this.redactConfig = config.redactConfig;
     this.complianceConfig = config.complianceConfig;
+    this.storage = config.storage;
   }
 
   private async ensureKeyPair(): Promise<void> {
@@ -72,6 +76,7 @@ export class AuditReceipt {
    */
   async record(interaction: Interaction): Promise<Receipt> {
     validateInteraction(interaction);
+    validateMetadata(interaction.metadata);
 
     try {
       await this.ensureKeyPair();
@@ -173,6 +178,22 @@ export class AuditReceipt {
 
       this.receipts.push(receipt);
       this.lastHash = hash;
+
+      // Persist to storage if configured
+      if (this.storage) {
+        try {
+          await this.storage.append(receipt);
+        } catch (cause) {
+          const error = cause instanceof Error ? cause : new Error(String(cause));
+          if (this.complianceConfig?.mode === 'strict') {
+            throw new ComplianceError('Failed to persist receipt to storage', { cause: error });
+          }
+          if (this.complianceConfig?.onComplianceError) {
+            this.complianceConfig.onComplianceError(error);
+          }
+          console.warn(`[AgentTrail] Failed to persist receipt: ${error.message}`);
+        }
+      }
 
       return receipt;
     } catch (err) {

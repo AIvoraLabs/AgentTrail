@@ -111,4 +111,6 @@ export interface AuditReceiptConfig {
   redactConfig?: RedactConfig;
   driftThresholdMs?: number;
   maxKeys?: number;
+  /** Optional persistent storage backend. When provided, receipts are persisted to storage. */
+  storage?: import('./storage').StorageBackend;
 }
