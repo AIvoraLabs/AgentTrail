@@ -93,4 +93,57 @@ describe('wrapOpenAI', () => {
 
     expect(result).toEqual(mockResult);
   });
+
+  describe('storage integration', () => {
+    it('should call storage.append() when storage configured', async () => {
+      const storage = { append: vi.fn().mockResolvedValue(undefined), readRange: vi.fn() };
+      const client = createMockClient();
+
+      const mockResult = {
+        id: 'chat-1',
+        choices: [
+          {
+            message: { content: 'Hello back!', role: 'assistant' },
+            finish_reason: 'stop',
+          },
+        ],
+        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+        model: 'gpt-4o',
+      };
+
+      client.__originalCreate.mockResolvedValue(mockResult);
+
+      const wrapped = wrapOpenAI(client, { agentId: 'test-agent', storage });
+      await wrapped.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: 'Hello' }],
+      });
+
+      // Allow async audit promise to settle (auditor.record() is not awaited in the wrapper)
+      await new Promise((r) => setTimeout(r, 50));
+
+      expect(storage.append).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not throw when storage omitted from config', async () => {
+      const client = createMockClient();
+
+      const mockResult = {
+        id: 'chat-1',
+        choices: [{ message: { content: 'Hi!', role: 'assistant' }, finish_reason: 'stop' }],
+        usage: { prompt_tokens: 5, completion_tokens: 3, total_tokens: 8 },
+        model: 'gpt-4o',
+      };
+
+      client.__originalCreate.mockResolvedValue(mockResult);
+
+      const wrapped = wrapOpenAI(client, { agentId: 'test-agent' });
+      await expect(
+        wrapped.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [{ role: 'user', content: 'Hi' }],
+        }),
+      ).resolves.toEqual(mockResult);
+    });
+  });
 });

@@ -1,17 +1,44 @@
-import { AuditReceipt } from '@aivoralabs/agenttrail';
+import { AuditReceipt, type ComplianceConfig, type StorageBackend } from '@aivoralabs/agenttrail';
 
 export interface VercelAIConfig {
   agentId: string;
+  /** Optional persistent storage backend. When provided, receipts are persisted to disk. */
+  storage?: StorageBackend;
+  /** Optional compliance mode configuration. */
+  complianceConfig?: ComplianceConfig;
+}
+
+interface GenerateParams {
+  prompt: string;
+  messages?: unknown[];
+  modelId?: string;
+  providerMetadata?: unknown;
+  tools?: unknown[];
+}
+
+interface StreamParams {
+  prompt: string;
+  messages?: unknown[];
+  modelId?: string;
+  onChunk?: (chunk: unknown) => void;
+}
+
+interface GenerateResult {
+  text?: string;
+  usage?: {
+    promptTokens?: number;
+    completionTokens?: number;
+  };
 }
 
 interface VercelMiddleware {
   wrapGenerate?: (opts: {
-    doGenerate: () => Promise<any>;
-    params: any;
-  }) => Promise<any>;
+    doGenerate: () => Promise<GenerateResult>;
+    params: GenerateParams;
+  }) => Promise<unknown>;
   wrapStream?: (opts: {
     doStream: () => Promise<{ stream: ReadableStream; warnings?: unknown }>;
-    params: any;
+    params: StreamParams;
   }) => Promise<{ stream: ReadableStream; warnings?: unknown }>;
 }
 
@@ -30,32 +57,36 @@ interface VercelMiddleware {
  * });
  * ```
  */
-export function auditReceiptMiddleware(
-  config: VercelAIConfig,
-): VercelMiddleware {
+export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware {
   return {
     wrapGenerate: async ({ doGenerate, params }) => {
       const timestampStart = new Date().toISOString();
       const result = await doGenerate();
       const timestampEnd = new Date().toISOString();
 
-      const auditor = new AuditReceipt({ agentId: config.agentId });
-
-      await auditor.record({
-        input: JSON.stringify(params.prompt),
-        output: result.text ?? '',
-        model: params.modelId ?? 'unknown',
-        provider: 'vercel-ai',
-        tokensPrompt: result.usage?.promptTokens,
-        tokensCompletion: result.usage?.completionTokens,
-        metadata: {
-          timestamp_start: timestampStart,
-          timestamp_end: timestampEnd,
-          settings: params.providerMetadata,
-        },
-      }).catch(() => {
-        // Fail-safe: never throw from middleware
+      const auditor = new AuditReceipt({
+        agentId: config.agentId,
+        storage: config.storage,
+        complianceConfig: config.complianceConfig,
       });
+
+      await auditor
+        .record({
+          input: JSON.stringify(params.prompt),
+          output: result.text ?? '',
+          model: params.modelId ?? 'unknown',
+          provider: 'vercel-ai',
+          tokensPrompt: result.usage?.promptTokens,
+          tokensCompletion: result.usage?.completionTokens,
+          metadata: {
+            timestamp_start: timestampStart,
+            timestamp_end: timestampEnd,
+            ...(params.providerMetadata !== undefined ? { settings: params.providerMetadata } : {}),
+          },
+        })
+        .catch(() => {
+          // Fail-safe: never throw from middleware
+        });
 
       return result;
     },
@@ -78,20 +109,26 @@ export function auditReceiptMiddleware(
         },
         async flush() {
           const timestampEnd = new Date().toISOString();
-          const auditor = new AuditReceipt({ agentId: config.agentId });
-
-          await auditor.record({
-            input: JSON.stringify(params.prompt),
-            output: fullOutput,
-            model: params.modelId ?? 'unknown',
-            provider: 'vercel-ai',
-            metadata: {
-              timestamp_start: timestampStart,
-              timestamp_end: timestampEnd,
-            },
-          }).catch(() => {
-            // Fail-safe: never throw from middleware
+          const auditor = new AuditReceipt({
+            agentId: config.agentId,
+            storage: config.storage,
+            complianceConfig: config.complianceConfig,
           });
+
+          await auditor
+            .record({
+              input: JSON.stringify(params.prompt),
+              output: fullOutput,
+              model: params.modelId ?? 'unknown',
+              provider: 'vercel-ai',
+              metadata: {
+                timestamp_start: timestampStart,
+                timestamp_end: timestampEnd,
+              },
+            })
+            .catch(() => {
+              // Fail-safe: never throw from middleware
+            });
         },
       });
 

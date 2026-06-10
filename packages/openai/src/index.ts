@@ -1,9 +1,13 @@
-import OpenAI from 'openai';
-import { AuditReceipt } from '@aivoralabs/agenttrail';
+import { AuditReceipt, type ComplianceConfig, type StorageBackend } from '@aivoralabs/agenttrail';
+import type OpenAI from 'openai';
 import type { ChatCompletion } from 'openai/resources/chat/completions';
 
 export interface OpenAIConfig {
   agentId: string;
+  /** Optional persistent storage backend. When provided, receipts are persisted to disk. */
+  storage?: StorageBackend;
+  /** Optional compliance mode configuration. */
+  complianceConfig?: ComplianceConfig;
 }
 
 /**
@@ -22,11 +26,13 @@ export interface OpenAIConfig {
  * ```
  */
 export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
-  const auditor = new AuditReceipt({ agentId: config.agentId });
+  const auditor = new AuditReceipt({
+    agentId: config.agentId,
+    storage: config.storage,
+    complianceConfig: config.complianceConfig,
+  });
 
-  const originalCreate = client.chat.completions.create.bind(
-    client.chat.completions,
-  );
+  const originalCreate = client.chat.completions.create.bind(client.chat.completions);
 
   // Replace create with an audited version
   client.chat.completions.create = ((body: any, options?: any) => {
@@ -52,7 +58,9 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
               timestamp_start: timestampStart,
               timestamp_end: timestampEnd,
               finish_reason: completion.choices?.[0]?.finish_reason,
-              tool_calls: outputMessage?.tool_calls,
+              ...(outputMessage?.tool_calls !== undefined
+                ? { tool_calls: outputMessage.tool_calls }
+                : {}),
             },
           })
           .catch(() => {
