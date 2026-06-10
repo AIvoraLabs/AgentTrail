@@ -1,6 +1,7 @@
 import { AuditReceipt, type ComplianceConfig, type StorageBackend } from '@aivoralabs/agenttrail';
 import type OpenAI from 'openai';
-import type { ChatCompletion } from 'openai/resources/chat/completions';
+import type { RequestOptions } from 'openai/core';
+import type { ChatCompletion, ChatCompletionCreateParams } from 'openai/resources/chat/completions';
 
 export interface OpenAIConfig {
   agentId: string;
@@ -35,10 +36,13 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
   const originalCreate = client.chat.completions.create.bind(client.chat.completions);
 
   // Replace create with an audited version
-  client.chat.completions.create = ((body: any, options?: any) => {
+  client.chat.completions.create = ((
+    body: ChatCompletionCreateParams,
+    options?: RequestOptions,
+  ) => {
     const timestampStart = new Date().toISOString();
 
-    return originalCreate(body, options).then((result: any) => {
+    return originalCreate(body, options).then((result: ChatCompletion) => {
       const timestampEnd = new Date().toISOString();
 
       // Only handle non-streaming ChatCompletion responses
