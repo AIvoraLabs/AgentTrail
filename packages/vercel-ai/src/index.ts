@@ -1,9 +1,11 @@
-import { AuditReceipt, type ComplianceConfig, type StorageBackend } from '@aivoralabs/agenttrail';
+import { AuditReceipt, ComplianceError } from '@aivoralabs/agenttrail';
+import type { ComplianceConfig, ComplianceMode, StorageBackend } from '@aivoralabs/agenttrail';
 
 export interface VercelAIConfig {
   agentId: string;
   /** Optional persistent storage backend. When provided, receipts are persisted to disk. */
   storage?: StorageBackend;
+  complianceMode?: ComplianceMode;
   /** Optional compliance mode configuration. */
   complianceConfig?: ComplianceConfig;
 }
@@ -58,6 +60,9 @@ interface VercelMiddleware {
  * ```
  */
 export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware {
+  const complianceMode = config.complianceMode ?? config.complianceConfig?.mode ?? 'strict';
+  const complianceConfig = config.complianceConfig;
+
   return {
     wrapGenerate: async ({ doGenerate, params }) => {
       const timestampStart = new Date().toISOString();
@@ -67,7 +72,7 @@ export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware
       const auditor = new AuditReceipt({
         agentId: config.agentId,
         storage: config.storage,
-        complianceConfig: config.complianceConfig,
+        complianceConfig: { mode: complianceMode, ...complianceConfig },
       });
 
       await auditor
@@ -84,14 +89,39 @@ export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware
             ...(params.providerMetadata !== undefined ? { settings: params.providerMetadata } : {}),
           },
         })
-        .catch(() => {
-          // Fail-safe: never throw from middleware
+        .catch((error: Error) => {
+          if (complianceMode === 'strict') {
+            throw error;
+          }
+          complianceConfig?.onComplianceError?.(error);
+          console.warn('[AgentTrail] Receipt recording failed (generate)');
         });
 
       return result;
     },
 
     wrapStream: async ({ doStream, params }) => {
+      // Pre-flight: verify auditor can record (dry run, no storage persistence)
+      const preflightAuditor = new AuditReceipt({
+        agentId: config.agentId,
+        complianceConfig: { mode: complianceMode, ...complianceConfig },
+      });
+      try {
+        await preflightAuditor.record({
+          input: '[preflight]',
+          output: '[preflight]',
+          model: '[preflight]',
+          provider: 'vercel-ai',
+        });
+      } catch (err) {
+        if (complianceMode === 'strict') {
+          throw err;
+        }
+        console.warn(
+          '[AgentTrail] Compliance pre-flight check failed, continuing in permissive mode',
+        );
+      }
+
       const timestampStart = new Date().toISOString();
       const { stream, ...rest } = await doStream();
 
@@ -112,11 +142,11 @@ export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware
           const auditor = new AuditReceipt({
             agentId: config.agentId,
             storage: config.storage,
-            complianceConfig: config.complianceConfig,
+            complianceConfig: { mode: complianceMode, ...complianceConfig },
           });
 
-          await auditor
-            .record({
+          try {
+            await auditor.record({
               input: JSON.stringify(params.prompt),
               output: fullOutput,
               model: params.modelId ?? 'unknown',
@@ -125,10 +155,10 @@ export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware
                 timestamp_start: timestampStart,
                 timestamp_end: timestampEnd,
               },
-            })
-            .catch(() => {
-              // Fail-safe: never throw from middleware
             });
+          } catch {
+            console.warn('[AgentTrail] Stream receipt creation failed');
+          }
         },
       });
 

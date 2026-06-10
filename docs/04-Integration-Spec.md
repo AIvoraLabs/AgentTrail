@@ -3,7 +3,7 @@
 > **Integration Spec Document**
 > Versión: 1.0
 > Estado: Borrador pre-MVP
-> Basado en: Documentación oficial de Vercel AI SDK, LangChain, OpenAI SDK,
+> Basado en: Documentación oficial de Vercel AI SDK, OpenAI SDK,
 > e investigaciones en `market-research/analyses/`
 
 ---
@@ -15,7 +15,7 @@
 | **Middleware, no fork** | Interceptamos sin modificar el código del usuario | Facilita adopción: `npm install` + 3 líneas de código |
 | **Zero-touch** | El SDK captura automáticamente input/output | Si requiere configuración manual, no lo adopta un equipo ocupado |
 | **Provider-agnostic** | Soporte multi-provider desde V1 | OpenAI y Anthropic son los más usados por el target |
-| **Fail-safe** | Si el SDK falla, el agente sigue funcionando (pero se registra el fallo) | No queremos que nuestro SDK rompa producción |
+| **Fail-closed** | Strict mode: si falla la escritura del receipt, el agente NO responde. Permissive mode: se genera receipt degradado y el agente continúa. | Compliance-grade requiere fail-closed. El modo permissivo es para desarrollo/QA. |
 
 ---
 
@@ -109,7 +109,7 @@ export function auditReceiptMiddleware(config: VercelAIConfig): LanguageModelV4M
 ```typescript
 import { wrapLanguageModel } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { auditReceiptMiddleware } from '@aivoralabs/agenttrail';
+import { auditReceiptMiddleware } from '@aivoralabs/agenttrail-vercel';
 
 const model = wrapLanguageModel({
   model: openai('gpt-4o'),
@@ -192,7 +192,7 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
 
 ```typescript
 import OpenAI from 'openai';
-import { wrapOpenAI } from '@aivoralabs/agenttrail';
+import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
 
 const client = wrapOpenAI(new OpenAI(), {
   agentId: 'customer-support-v1',

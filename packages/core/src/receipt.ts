@@ -117,7 +117,6 @@ export class AuditReceipt {
         timestamp_start: tsStart.iso,
         timestamp_end: tsEnd.iso,
         input: finalInput,
-        input_hash: inputHash,
         output: interaction.output,
         model: interaction.model,
         provider: interaction.provider,
@@ -125,6 +124,10 @@ export class AuditReceipt {
         clock_drift_detected: tsStart.drift_detected || tsEnd.drift_detected,
         key_id: computeKeyId(this.publicKey),
       };
+
+      if (inputHash) {
+        payload.input_hash = inputHash;
+      }
 
       if (interaction.tokensPrompt !== undefined) {
         payload.tokens_prompt = interaction.tokensPrompt;

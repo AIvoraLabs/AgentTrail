@@ -38,11 +38,6 @@
                     ┌─────────▼──────────┐
                     │  Audit Receipt      │
                     │  (JSON + Hash Chain) │
-                    └─────────┬──────────┘
-                              │
-                    ┌─────────▼──────────┐
-                    │  Storage Layer      │
-                    │  (Append-only log)  │
                     └─────────────────────┘
 ```
 
@@ -102,23 +97,35 @@ Si alguien modifica un receipt histórico:
 
 ## 4. Componentes del SDK
 
-### 4.1 Módulos
+### 4.1 Paquetes
 
 ```
-@aivoralabs/agenttrail/
-├── src/
-│   ├── core/
+@aivoralabs/
+├── agenttrail/                  # Core SDK
+│   ├── src/
 │   │   ├── hash-chain.ts        # SHA-256 chaining logic
 │   │   ├── receipt.ts           # Receipt builder & validator
-│   │   └── signer.ts            # Ed25519 digital signature
-│   ├── integrations/
-│   │   ├── vercel-ai.ts         # Vercel AI SDK middleware
-│   │   └── openai.ts            # OpenAI SDK wrapper
-│   ├── storage/
-│   │   └── append-only.ts       # JSONL append-only log writer
-│   ├── export/
-│   │   └── json-export.ts       # JSON receipt export
-│   └── index.ts                 # Public API
+│   │   ├── signer.ts            # Ed25519 digital signature
+│   │   ├── timestamp.ts         # Timestamp generation with drift detection
+│   │   ├── redact.ts            # PII redaction engine
+│   │   ├── validate.ts          # Input validation
+│   │   ├── errors.ts            # Error types
+│   │   ├── types.ts             # TypeScript interfaces
+│   │   ├── verify-chains.ts     # Multi-agent chain verification
+│   │   └── index.ts             # Public API
+│   └── __tests__/
+├── agenttrail-vercel/           # Vercel AI SDK middleware
+│   ├── src/
+│   │   └── index.ts
+│   └── __tests__/
+├── agenttrail-openai/           # OpenAI SDK wrapper
+│   ├── src/
+│   │   └── index.ts
+│   └── __tests__/
+└── agenttrail-cli/              # CLI verification tool
+    ├── src/
+    │   └── index.ts
+    └── __tests__/
 ```
 
 **Decisión**: TypeScript/Node primero.

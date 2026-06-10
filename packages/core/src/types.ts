@@ -102,6 +102,44 @@ export interface TimestampResult {
   drift_detected: boolean;
 }
 
+export interface VerificationResult {
+  valid: boolean;
+  hashChainIntact: boolean;
+  signaturesValid: boolean;
+  verifiedSignatures: number;
+  signatureErrors: { receiptId: string; error: string }[];
+  brokenAtIndex?: number;
+}
+
+export interface AuditReport {
+  report_version: string;
+  generated_at: string;
+  tool: string;
+  source_file: string;
+  summary: {
+    verdict: 'intact' | 'broken';
+    total_receipts: number;
+    hash_chain_intact: boolean;
+    signatures_valid: boolean;
+    verified_signatures: number;
+  };
+  agents: {
+    agent_id: string;
+    receipts_count: number;
+    verdict: 'intact' | 'broken';
+    broken_at_index?: number;
+    broken_receipt_id?: string;
+  }[];
+  per_receipt: {
+    index: number;
+    receipt_id: string;
+    hash_valid: boolean;
+    signature_valid: boolean;
+    agent_id: string;
+    timestamp_start: string;
+  }[];
+}
+
 export interface AuditReceiptConfig {
   agentId: string;
   version?: string;

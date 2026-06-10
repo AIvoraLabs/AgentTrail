@@ -24,7 +24,7 @@
 ### 2.1 Estructura raíz
 
 ```typescript
-interface AuditReceipt {
+interface Receipt {
   // --- Identificación ---
   receipt_id: string;           // UUIDv7 - time-sortable unique ID
   agent_id: string;             // Identificador del agente monitoreado
@@ -54,6 +54,8 @@ interface ReceiptPayload {
   // --- Timestamps ---
   timestamp_start: string;       // ISO 8601 - inicio de la interacción
   timestamp_end: string;         // ISO 8601 - fin de la interacción
+  monotonic_ns?: string;         // Monotonic clock (nanosegundos desde boot)
+  clock_drift_detected?: boolean; // True si se detectó drift del reloj
   
   // --- Interacción ---
   input: string;                 // Input del usuario (redactado si contiene PII)
@@ -70,11 +72,16 @@ interface ReceiptPayload {
   tokens_total?: number;         // Tokens totales
   
   // --- Tool calls (si aplica) ---
-  tool_calls?: ToolCall[];
+  tool_calls?: SerializedToolCall[];
   
   // --- Compliance ---
-  policy_check?: PolicyCheck;    // Resultado de verificación de políticas (opcional)
+  policy_check?: SerializedPolicyCheck;  // Resultado de verificación de políticas (opcional)
   human_verifier?: string;       // ID del humano que verificó (Artículo 14)
+  
+  // --- Claves y degradación ---
+  key_id?: string;               // ID de la clave usada para firmar (12 chars hex SHA-256)
+  degraded?: boolean;            // True si este receipt fue generado en modo degradado
+  degradation_reason?: string;   // Razón de la degradación (ej. "key_store_unavailable")
 }
 ```
 
@@ -82,29 +89,68 @@ interface ReceiptPayload {
 
 **Justificación**: VCP v1.1 usa el mismo enfoque. El hash chain opera sobre representación textual canónica.
 
-### 2.3 Tool calls
+### 2.3 Serialized tool calls
 
 ```typescript
-interface ToolCall {
+interface SerializedToolCall {
   tool_name: string;             // Nombre del tool
   tool_input: string;            // Input del tool (JSON serializado)
   tool_output: string;           // Output del tool
-  tool_execution_ms: number;     // Tiempo de ejecución
+  tool_execution_ms: number;     // Tiempo de ejecución en ms
   tool_status: 'success' | 'error';
+  sequence: number;              // Orden del tool call en la interacción
+  timestamp_start: string;       // ISO 8601 - inicio del tool call
+  timestamp_end: string;         // ISO 8601 - fin del tool call
+  parent_sequence?: number;      // Sequence del tool call padre (si es sub-call)
 }
 ```
 
 ### 2.4 Policy check
 
 ```typescript
-interface PolicyCheck {
+interface SerializedPolicyCheck {
   policy_name: string;           // Nombre de la política evaluada
   status: 'pass' | 'fail' | 'review';
   details?: string;              // Razón del resultado
 }
 ```
 
-### 2.5 Ejemplo completo
+### 2.5 Verification result
+
+```typescript
+interface VerificationResult {
+  valid: boolean;                // True si hash chain + firmas son válidas
+  hashChainIntact: boolean;      // True si el hash chain está intacto
+  signaturesValid: boolean;      // True si todas las firmas verifican
+  signatureErrors: VerificationError[];  // Detalle de errores de firma
+  brokenAtIndex?: number;        // Índice donde se rompió la cadena (si aplica)
+  totalReceipts: number;         // Total de receipts verificados
+  verifiedSignatures: number;    // Cuántas firmas se verificaron exitosamente
+}
+
+interface VerificationError {
+  receiptId: string;
+  message: string;
+  phase: 'hash' | 'signature';
+}
+```
+
+### 2.6 Verify chain options
+
+```typescript
+interface VerifyChainOptions {
+  verifySignatures?: boolean;    // Si se deben verificar las firmas Ed25519
+  publicKeys?: KeyEntry[];       // Lista de claves públicas para verificación
+}
+
+interface KeyEntry {
+  publicKey: string;             // Clave pública en base64
+  activatedAt: string;           // ISO 8601 - cuándo se activó esta clave
+  keyId: string;                 // Identificador único de la clave
+}
+```
+
+### 2.7 Ejemplo completo
 
 ```json
 {
@@ -117,6 +163,9 @@ interface PolicyCheck {
   "payload": {
     "timestamp_start": "2026-06-05T14:30:45.123Z",
     "timestamp_end": "2026-06-05T14:30:47.456Z",
+    "monotonic_ns": "48290123456789",
+    "clock_drift_detected": false,
+    "key_id": "a1b2c3d4e5f6",
     "input": "¿Cuál es el estado de mi orden #12345?",
     "output": "Tu orden #12345 fue enviada el 3 de junio y está programada para entrega el 8 de junio.",
     "model": "gpt-4o",
@@ -130,7 +179,10 @@ interface PolicyCheck {
         "tool_input": "{\"order_id\": \"12345\"}",
         "tool_output": "{\"status\": \"shipped\", \"estimated_delivery\": \"2026-06-08\"}",
         "tool_execution_ms": 234,
-        "tool_status": "success"
+        "tool_status": "success",
+        "sequence": 1,
+        "timestamp_start": "2026-06-05T14:30:45.200Z",
+        "timestamp_end": "2026-06-05T14:30:45.434Z"
       }
     ],
     "policy_check": {
@@ -176,33 +228,76 @@ interface PolicyCheck {
 
 ```typescript
 class AuditReceipt {
-  constructor(config: {
-    agentId: string;
-    storageDir?: string;   // Default: ./audit-logs/
-  })
+  constructor(config: AuditReceiptConfig)
 
   // Record a single interaction and return the receipt
-  async record(interaction: {
-    input: string;
-    output: string;
-    model: string;
-    provider: string;
-    tokensPrompt?: number;
-    tokensCompletion?: number;
-    toolCalls?: ToolCall[];
-    policyCheck?: PolicyCheck;
-    humanVerifier?: string;
-    metadata?: Record<string, unknown>;
-  }): Promise<Receipt>
+  async record(interaction: Interaction): Promise<Receipt>
 
   // Verify chain integrity from a list of receipts
-  static verifyChain(receipts: Receipt[]): boolean
+  static verifyChain(receipts: Receipt[], options?: VerifyChainOptions): Promise<VerificationResult>
 
-  // Export receipts as JSON array
-  async exportJSON(range?: {
-    start?: Date;
-    end?: Date;
-  }): Promise<Receipt[]>
+  // Export receipts as JSON array (synchronous)
+  exportJSON(): Receipt[]
+}
+
+interface AuditReceiptConfig {
+  agentId: string;
+  version?: string;              // SDK version, default "1.0"
+  privateKey?: string;           // Ed25519 private key (base64)
+  publicKey?: string;            // Ed25519 public key (base64)
+  complianceConfig?: ComplianceConfig;  // Modo de compliance (strict/permissive)
+  redactConfig?: RedactConfig;          // Configuración de redacción PII
+  driftThresholdMs?: number;     // Umbral de drift de reloj en ms
+  maxKeys?: number;              // Máximo de claves rotadas a mantener
+}
+
+interface Interaction {
+  input: string;
+  output: string;
+  model: string;
+  provider: string;
+  tokensPrompt?: number;
+  tokensCompletion?: number;
+  toolCalls?: ToolCall[];
+  policyCheck?: PolicyCheck;
+  humanVerifier?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// Developer-facing types (camelCase)
+interface ToolCall {
+  toolName: string;
+  toolInput: string;
+  toolOutput: string;
+  toolExecutionMs: number;
+  toolStatus: 'success' | 'error';
+  sequence: number;
+  timestampStart: string;
+  timestampEnd: string;
+  parentSequence?: number;
+}
+
+interface PolicyCheck {
+  policyName: string;
+  status: 'pass' | 'fail' | 'review';
+  details?: string;
+}
+
+interface ComplianceConfig {
+  mode?: ComplianceMode;          // 'strict' (default) | 'permissive'
+  onComplianceError?: (error: Error) => void;
+}
+
+type ComplianceMode = 'strict' | 'permissive';
+
+interface RedactConfig {
+  rules?: RedactRule[];
+  hashInput?: boolean;
+}
+
+interface RedactRule {
+  pattern: RegExp;
+  replacement?: string;
 }
 ```
 
@@ -210,7 +305,7 @@ class AuditReceipt {
 
 ```typescript
 import { wrapLanguageModel } from 'ai';
-import { auditReceiptMiddleware } from '@aivoralabs/agenttrail';
+import { auditReceiptMiddleware } from '@aivoralabs/agenttrail-vercel';
 
 const model = wrapLanguageModel({
   model: yourModel,
@@ -223,9 +318,10 @@ const model = wrapLanguageModel({
 ### 4.3 OpenAI SDK wrapper
 
 ```typescript
-import { createAuditWrapper } from '@aivoralabs/agenttrail';
+import OpenAI from 'openai';
+import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
 
-const client = createAuditWrapper(new OpenAI(), {
+const client = wrapOpenAI(new OpenAI(), {
   agentId: 'my-agent-v1',
 });
 

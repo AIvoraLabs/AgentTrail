@@ -19,7 +19,7 @@ npm install @aivoralabs/agenttrail
 
 ```typescript
 import { wrapLanguageModel } from 'ai';
-import { auditReceiptMiddleware } from '@aivoralabs/agenttrail';
+import { auditReceiptMiddleware } from '@aivoralabs/agenttrail-vercel';
 
 const model = wrapLanguageModel({
   model: yourModel,

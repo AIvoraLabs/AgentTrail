@@ -1,7 +1,7 @@
 export * from './errors.js';
 export * from './validate.js';
 export { AuditReceipt } from './receipt';
-export { verifyChain } from './hash-chain';
+export { verifyChain, verifyChains } from './hash-chain';
 export { generateKeyPair, sign, verify } from './signer';
 export { JSONLFileWriter } from './storage';
 export type { StorageBackend } from './storage';
@@ -21,4 +21,6 @@ export type {
   RedactRule,
   RedactConfig,
   TimestampResult,
+  VerificationResult,
+  AuditReport,
 } from './types';
