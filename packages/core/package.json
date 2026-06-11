@@ -35,6 +35,8 @@
     "@types/node": "^22.0.0",
     "async-mutex": "^0.5.0",
     "proper-lockfile": "^4.1.0",
+    "openai": "^4.0.0",
+    "@aivoralabs/agenttrail-openai": "workspace:*",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
