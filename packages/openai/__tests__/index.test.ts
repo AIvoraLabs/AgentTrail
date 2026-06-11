@@ -401,8 +401,7 @@ describe('compliance mode — non-streaming', () => {
     // Verify receipt recorded (not pre-flight)
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].output).toBe('Hello back!');
   });
 
@@ -440,8 +439,7 @@ describe('compliance mode — non-streaming', () => {
     // Verify receipt recorded without token fields
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].tokensPrompt).toBeUndefined();
     expect(recordCall[0].tokensCompletion).toBeUndefined();
   });
@@ -505,8 +503,7 @@ describe('streaming support', () => {
     // Verify the receipt contains the accumulated content
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].output).toBe('Hello world');
     expect(recordCall[0].metadata.finish_reason).toBe('stop');
   });
@@ -582,8 +579,7 @@ describe('streaming support', () => {
     // Verify tool calls in receipt metadata
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].metadata.tool_calls).toBeDefined();
     const toolCalls = JSON.parse(recordCall[0].metadata.tool_calls);
     expect(toolCalls).toHaveLength(1);
@@ -622,8 +618,7 @@ describe('streaming support', () => {
 
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].output).toBe('');
   });
 
@@ -824,8 +819,7 @@ describe('streaming support', () => {
     // Receipt should have been recorded with partial content and stream_error flag
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].output).toBe('Partial');
     expect(recordCall[0].metadata.stream_error).toBe(true);
   });
@@ -884,8 +878,7 @@ describe('streaming support', () => {
     // Verify receipt has token counts
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].tokensPrompt).toBe(100);
     expect(recordCall[0].tokensCompletion).toBe(50);
   });
@@ -933,8 +926,7 @@ describe('streaming support', () => {
     // Verify receipt
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].output).toBe('Only chunk');
     expect(recordCall[0].metadata.finish_reason).toBe('stop');
   });
@@ -1008,8 +1000,7 @@ describe('streaming support', () => {
     // Verify receipt
     const recordCall = mockRecord.mock.calls.find(
       (args: any[]) => args[0]?.input !== '[preflight]',
-    );
-    expect(recordCall).toBeDefined();
+    )!;
     expect(recordCall[0].output).toBe(''); // No text content
     expect(recordCall[0].metadata.tool_calls).toBeDefined();
     const toolCalls = JSON.parse(recordCall[0].metadata.tool_calls);

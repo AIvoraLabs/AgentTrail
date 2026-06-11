@@ -43,8 +43,11 @@ export interface AgentConfig {
   agentId: string;
   /** Persistent storage backend for audit receipts. */
   storage: JSONLFileWriter;
-  /** System prompt that defines the agent's behavior and persona. */
-  systemPrompt: string;
+  /**
+   * System prompt that defines the agent's behavior and persona.
+   * When omitted, a generic assistant prompt is used.
+   */
+  systemPrompt?: string;
   /** Optional model override. Defaults to `'llama-3.3-70b-versatile'` when not set. */
   model?: string;
 }
