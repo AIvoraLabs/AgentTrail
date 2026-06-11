@@ -24,6 +24,19 @@ export interface Interaction {
   toolCalls?: ToolCall[];
   policyCheck?: PolicyCheck;
   humanVerifier?: string;
+  /**
+   * Optional key-value metadata attached to the receipt.
+   *
+   * Constraints:
+   * - Max 50 top-level keys
+   * - Nesting depth ≤ 4 (metadata object itself is depth 1)
+   * - Values must be JSON-safe: strings, numbers, booleans, null, arrays, plain objects
+   * - Strings ≤ 1000 chars, arrays ≤ 100 items
+   *
+   * **Important**: Do NOT nest provider-specific objects directly (e.g., OpenAI tool_calls).
+   * Serialize them as JSON strings first to stay within depth limits.
+   * The SDK auto-serializes `tool_calls` arrays as a safety measure.
+   */
   metadata?: Record<string, unknown>;
 }
 

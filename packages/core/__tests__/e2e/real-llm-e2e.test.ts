@@ -252,5 +252,36 @@ describe.skipIf(!hasApiKey)(
         ).rejects.toThrow(ComplianceError);
       },
     );
+
+    /**
+     * 8.6 Invalid API key + strict mode + streaming → ComplianceError thrown
+     *
+     * Proves the fail-closed behavior applies to streaming as well: when the
+     * provider call itself fails (invalid key), the error is wrapped in a
+     * ComplianceError rather than propagating as a raw SDK error.
+     */
+    it(
+      'Invalid key + strict + streaming → ComplianceError',
+      { timeout: 15000 },
+      async () => {
+        const invalidClient = new OpenAI({
+          baseURL: 'https://api.groq.com/openai/v1',
+          apiKey: 'sk-invalid-key-test-only',
+        });
+
+        const wrapped = wrapOpenAI(invalidClient, {
+          agentId: 'invalid-key-stream',
+          complianceMode: 'strict',
+        });
+
+        await expect(
+          wrapped.chat.completions.create({
+            model: 'llama-3.1-8b-instant',
+            messages: [{ role: 'user', content: 'Hello' }],
+            stream: true,
+          }),
+        ).rejects.toThrow(ComplianceError);
+      },
+    );
   },
 );

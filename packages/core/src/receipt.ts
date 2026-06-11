@@ -23,6 +23,21 @@ import type {
 } from './types';
 import { validateInteraction, validateKeyMaterial, validateMetadata } from './validate';
 
+/**
+ * Remove keys with `undefined` values from a metadata object.
+ * This is a safety net — wrappers should not pass undefined values,
+ * but we defend against it to prevent Zod rejection in validateMetadata().
+ */
+function stripUndefinedValues(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 // Re-export types and verifyChain
 export type {
   Receipt,
@@ -76,6 +91,21 @@ export class AuditReceipt {
    */
   async record(interaction: Interaction): Promise<Receipt> {
     validateInteraction(interaction);
+
+    // Strip undefined values before validation — defensive against wrapper bugs
+    if (interaction.metadata) {
+      interaction.metadata = stripUndefinedValues(interaction.metadata);
+
+      // Auto-serialize tool_calls arrays to strings to avoid depth violations
+      // This protects against any wrapper passing raw tool call objects
+      if (Array.isArray(interaction.metadata.tool_calls)) {
+        interaction.metadata = {
+          ...interaction.metadata,
+          tool_calls: JSON.stringify(interaction.metadata.tool_calls),
+        };
+      }
+    }
+
     validateMetadata(interaction.metadata);
 
     try {

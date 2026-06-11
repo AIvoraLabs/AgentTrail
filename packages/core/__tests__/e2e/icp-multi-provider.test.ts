@@ -168,9 +168,9 @@ describe.skipIf(!hasApiKey)(
         expect(results.has('bizneo')).toBe(true);
         expect(results.has('velliv')).toBe(true);
 
-        for (const [agentId, result] of results) {
-          expect(result.valid).toBe(true);
-          expect(result.hashChainIntact).toBe(true);
+        for (const [agentId, chainResult] of results) {
+          expect(chainResult.result.valid).toBe(true);
+          expect(chainResult.result.hashChainIntact).toBe(true);
         }
 
         const totalReceipts =

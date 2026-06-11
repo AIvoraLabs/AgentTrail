@@ -585,10 +585,11 @@ describe('streaming support', () => {
     );
     expect(recordCall).toBeDefined();
     expect(recordCall[0].metadata.tool_calls).toBeDefined();
-    expect(recordCall[0].metadata.tool_calls).toHaveLength(1);
-    expect(recordCall[0].metadata.tool_calls[0].id).toBe('call_1');
-    expect(recordCall[0].metadata.tool_calls[0].function?.name).toBe('get_weather');
-    expect(recordCall[0].metadata.tool_calls[0].function?.arguments).toBe(
+    const toolCalls = JSON.parse(recordCall[0].metadata.tool_calls);
+    expect(toolCalls).toHaveLength(1);
+    expect(toolCalls[0].id).toBe('call_1');
+    expect(toolCalls[0].function?.name).toBe('get_weather');
+    expect(toolCalls[0].function?.arguments).toBe(
       '{"city":"London"}',
     );
   });
@@ -1011,9 +1012,10 @@ describe('streaming support', () => {
     expect(recordCall).toBeDefined();
     expect(recordCall[0].output).toBe(''); // No text content
     expect(recordCall[0].metadata.tool_calls).toBeDefined();
-    expect(recordCall[0].metadata.tool_calls).toHaveLength(1);
-    expect(recordCall[0].metadata.tool_calls[0].function?.name).toBe('search_tool');
-    expect(recordCall[0].metadata.tool_calls[0].function?.arguments).toBe('{"query":"test"}');
+    const toolCalls = JSON.parse(recordCall[0].metadata.tool_calls);
+    expect(toolCalls).toHaveLength(1);
+    expect(toolCalls[0].function?.name).toBe('search_tool');
+    expect(toolCalls[0].function?.arguments).toBe('{"query":"test"}');
     expect(recordCall[0].metadata.finish_reason).toBe('tool_calls');
   });
 });

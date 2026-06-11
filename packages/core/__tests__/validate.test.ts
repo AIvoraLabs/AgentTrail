@@ -259,4 +259,15 @@ describe('validateMetadata', () => {
     const meta = { big: BigInt(9007199254740991) };
     expect(() => validateMetadata(meta)).toThrow(TypeError);
   });
+
+  it('should reject metadata with undefined values', () => {
+    expect(() => validateMetadata({ key: undefined })).toThrow(TypeError);
+  });
+
+  it('should accept metadata after stripping undefined values', () => {
+    const cleaned = Object.fromEntries(
+      Object.entries({ key: 'value', empty: undefined }).filter(([, v]) => v !== undefined),
+    );
+    expect(() => validateMetadata(cleaned)).not.toThrow();
+  });
 });

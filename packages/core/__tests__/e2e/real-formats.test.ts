@@ -331,27 +331,25 @@ describe('Suite 10: Real-World Formats — edge-case data handling', () => {
   });
 
   /**
-   * 10.12 __proto__ key in metadata → TypeError
+   * 10.12 constructor key in metadata → TypeError
    *
-   * Proves that metadata containing the forbidden __proto__ key
+   * Proves that metadata containing the forbidden constructor key
    * is rejected (prototype pollution protection).
    *
-   * Note: We use Object.defineProperty because { __proto__: { x: 1 } }
-   * in JS sets the object's prototype rather than creating an own
-   * property, which would bypass validation.
+   * Note: __proto__ is not used because in Node.js 22 the __proto__
+   * setter intercepts even Object.defineProperty, making it impossible
+   * to create an own property with that name. constructor is the
+   * equivalent testable attack vector.
    */
-  it('__proto__ key in metadata → TypeError', async () => {
+  it('constructor key in metadata → TypeError', async () => {
     const auditor = harness.createAuditor('meta-proto', {
       storage: true,
     });
 
-    const forbiddenMetadata: Record<string, unknown> = {};
-    Object.defineProperty(forbiddenMetadata, '__proto__', {
-      value: { x: 1 },
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
+    // constructor CAN be an own property — real attack vector
+    const forbiddenMetadata: Record<string, unknown> = {
+      constructor: { polluted: true },
+    };
 
     await expect(
       auditor.record({

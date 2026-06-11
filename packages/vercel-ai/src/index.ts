@@ -66,7 +66,15 @@ export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware
   return {
     wrapGenerate: async ({ doGenerate, params }) => {
       const timestampStart = new Date().toISOString();
-      const result = await doGenerate();
+      let result: GenerateResult;
+      try {
+        result = await doGenerate();
+      } catch (err) {
+        if (complianceMode === 'strict') {
+          throw new ComplianceError('LLM provider call failed', { cause: err });
+        }
+        throw err;
+      }
       const timestampEnd = new Date().toISOString();
 
       const auditor = new AuditReceipt({
@@ -123,7 +131,16 @@ export function auditReceiptMiddleware(config: VercelAIConfig): VercelMiddleware
       }
 
       const timestampStart = new Date().toISOString();
-      const { stream, ...rest } = await doStream();
+      let streamResult: { stream: ReadableStream; warnings?: unknown };
+      try {
+        streamResult = await doStream();
+      } catch (err) {
+        if (complianceMode === 'strict') {
+          throw new ComplianceError('LLM provider call failed', { cause: err });
+        }
+        throw err;
+      }
+      const { stream, ...rest } = streamResult;
 
       let fullOutput = '';
 

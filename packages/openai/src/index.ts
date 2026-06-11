@@ -135,8 +135,16 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
 
       // --- Streaming branch ---
       if (body.stream === true) {
-        const result = await originalCreate(body, options);
-        const stream = result as Stream<ChatCompletionChunk>;
+        let rawResult: unknown;
+        try {
+          rawResult = await originalCreate(body, options);
+        } catch (err) {
+          if (complianceMode === 'strict') {
+            throw new ComplianceError('LLM provider call failed', { cause: err });
+          }
+          throw err;
+        }
+        const stream = rawResult as Stream<ChatCompletionChunk>;
         const chunks: ChatCompletionChunk[] = [];
         let fullOutput = '';
         let finishReason: string | null = null;
@@ -178,9 +186,11 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
         if (!streamError || complianceMode === 'permissive') {
           const accumulatedToolCalls =
             toolCallAccumulator.size > 0
-              ? Array.from(toolCallAccumulator.entries())
-                  .sort(([a], [b]) => a - b)
-                  .map(([index, tc]) => ({ index, ...tc }))
+              ? JSON.stringify(
+                  Array.from(toolCallAccumulator.entries())
+                    .sort(([a], [b]) => a - b)
+                    .map(([index, tc]) => ({ index, ...tc })),
+                )
               : undefined;
 
           const timestampEnd = new Date().toISOString();
@@ -196,8 +206,8 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
                 timestamp_start: timestampStart,
                 timestamp_end: timestampEnd,
                 finish_reason: finishReason,
-                tool_calls: accumulatedToolCalls,
-                stream_error: streamError ? true : undefined,
+                ...(accumulatedToolCalls ? { tool_calls: accumulatedToolCalls } : {}),
+                ...(streamError ? { stream_error: true } : {}),
               },
             });
           } catch (recordErr) {
@@ -221,44 +231,51 @@ export function wrapOpenAI(client: OpenAI, config: OpenAIConfig): OpenAI {
       }
 
       // --- Non-streaming branch ---
-      return originalCreate(body, options).then((result: ChatCompletion) => {
-        const timestampEnd = new Date().toISOString();
+      return originalCreate(body, options)
+        .then((result: ChatCompletion) => {
+          const timestampEnd = new Date().toISOString();
 
-        if (result?.choices && Array.isArray(result.choices)) {
-          const outputMessage = result.choices?.[0]?.message;
+          if (result?.choices && Array.isArray(result.choices)) {
+            const outputMessage = result.choices?.[0]?.message;
 
-          return auditor
-            .record({
-              input: JSON.stringify(body.messages ?? []),
-              output: outputMessage?.content ?? '',
-              model: body.model ?? 'unknown',
-              provider: 'openai',
-              tokensPrompt: result.usage?.prompt_tokens,
-              tokensCompletion: result.usage?.completion_tokens,
-              metadata: {
-                timestamp_start: timestampStart,
-                timestamp_end: timestampEnd,
-                finish_reason: result.choices?.[0]?.finish_reason,
-                ...(outputMessage?.tool_calls !== undefined
-                  ? { tool_calls: outputMessage.tool_calls }
-                  : {}),
-              },
-            })
-            .then(() => result)
-            .catch((error: Error) => {
-              if (complianceMode === 'strict') {
-                throw new ComplianceError('Receipt recording failed', {
-                  cause: error,
-                });
-              }
-              complianceConfig?.onComplianceError?.(error);
-              console.warn('[AgentTrail] Receipt recording failed (non-streaming)');
-              return result;
-            });
-        }
+            return auditor
+              .record({
+                input: JSON.stringify(body.messages ?? []),
+                output: outputMessage?.content ?? '',
+                model: body.model ?? 'unknown',
+                provider: 'openai',
+                tokensPrompt: result.usage?.prompt_tokens,
+                tokensCompletion: result.usage?.completion_tokens,
+                metadata: {
+                  timestamp_start: timestampStart,
+                  timestamp_end: timestampEnd,
+                  finish_reason: result.choices?.[0]?.finish_reason,
+                  ...(outputMessage?.tool_calls !== undefined
+                    ? { tool_calls: JSON.stringify(outputMessage.tool_calls) }
+                    : {}),
+                },
+              })
+              .then(() => result)
+              .catch((error: Error) => {
+                if (complianceMode === 'strict') {
+                  throw new ComplianceError('Receipt recording failed', {
+                    cause: error,
+                  });
+                }
+                complianceConfig?.onComplianceError?.(error);
+                console.warn('[AgentTrail] Receipt recording failed (non-streaming)');
+                return result;
+              });
+          }
 
-        return result;
-      });
+          return result;
+        })
+        .catch((error: Error) => {
+          if (complianceMode === 'strict') {
+            throw new ComplianceError('LLM provider call failed', { cause: error });
+          }
+          throw error;
+        });
     })();
   }) as typeof client.chat.completions.create;
 
