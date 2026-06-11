@@ -11,8 +11,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import OpenAI from 'openai';
 import { ComplianceError } from '@aivoralabs/agenttrail';
-import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
-import { TestHarness, ReceiptVerifier, AgentSimulator } from '../helpers';
+import { TestHarness, ReceiptVerifier } from '../helpers';
 
 const hasApiKey = !!process.env.GROQ_API_KEY;
 
@@ -36,15 +35,16 @@ describe.skipIf(!hasApiKey)(
       'Simple Q&A: real API → receipt → chain intact',
       { timeout: 60000 },
       async () => {
+        const { wrapOpenAI: wrap } = await import('@aivoralabs/agenttrail-openai');
         const client = new OpenAI({
           baseURL: 'https://api.groq.com/openai/v1',
           apiKey: process.env.GROQ_API_KEY,
         });
         const storage = harness.createStorage('simple-qa');
-        new AgentSimulator(client, {
+        wrap(client, {
           agentId: 'simple-qa',
           storage,
-          systemPrompt: 'You are a helpful assistant.',
+          complianceMode: 'strict',
         });
 
         const completion = await client.chat.completions.create({
@@ -75,15 +75,16 @@ describe.skipIf(!hasApiKey)(
       'Streaming: real stream → accumulated output',
       { timeout: 60000 },
       async () => {
+        const { wrapOpenAI: wrap } = await import('@aivoralabs/agenttrail-openai');
         const client = new OpenAI({
           baseURL: 'https://api.groq.com/openai/v1',
           apiKey: process.env.GROQ_API_KEY,
         });
         const storage = harness.createStorage('streaming');
-        new AgentSimulator(client, {
+        wrap(client, {
           agentId: 'streaming',
           storage,
-          systemPrompt: 'You are a helpful assistant.',
+          complianceMode: 'strict',
         });
 
         const stream = await client.chat.completions.create({
@@ -123,15 +124,16 @@ describe.skipIf(!hasApiKey)(
       'Tool calling: function call → metadata',
       { timeout: 60000 },
       async () => {
+        const { wrapOpenAI: wrap } = await import('@aivoralabs/agenttrail-openai');
         const client = new OpenAI({
           baseURL: 'https://api.groq.com/openai/v1',
           apiKey: process.env.GROQ_API_KEY,
         });
         const storage = harness.createStorage('tool-calling');
-        new AgentSimulator(client, {
+        wrap(client, {
           agentId: 'tool-calling',
           storage,
-          systemPrompt: 'You are a helpful assistant.',
+          complianceMode: 'strict',
         });
 
         const completion = await client.chat.completions.create({
@@ -185,15 +187,16 @@ describe.skipIf(!hasApiKey)(
       'Multi-turn: 3 calls → chain intact',
       { timeout: 60000 },
       async () => {
+        const { wrapOpenAI: wrap } = await import('@aivoralabs/agenttrail-openai');
         const client = new OpenAI({
           baseURL: 'https://api.groq.com/openai/v1',
           apiKey: process.env.GROQ_API_KEY,
         });
         const storage = harness.createStorage('multi-turn');
-        new AgentSimulator(client, {
+        wrap(client, {
           agentId: 'multi-turn',
           storage,
-          systemPrompt: 'You are a helpful assistant.',
+          complianceMode: 'strict',
         });
 
         await client.chat.completions.create({
@@ -234,12 +237,13 @@ describe.skipIf(!hasApiKey)(
       'Invalid key + strict → ComplianceError',
       { timeout: 15000 },
       async () => {
+        const { wrapOpenAI: wrap } = await import('@aivoralabs/agenttrail-openai');
         const invalidClient = new OpenAI({
           baseURL: 'https://api.groq.com/openai/v1',
           apiKey: 'sk-invalid-key-for-testing',
         });
 
-        const wrapped = wrapOpenAI(invalidClient, {
+        const wrapped = wrap(invalidClient, {
           agentId: 'invalid-key-test',
           complianceMode: 'strict',
         });
@@ -264,12 +268,13 @@ describe.skipIf(!hasApiKey)(
       'Invalid key + strict + streaming → ComplianceError',
       { timeout: 15000 },
       async () => {
+        const { wrapOpenAI: wrap } = await import('@aivoralabs/agenttrail-openai');
         const invalidClient = new OpenAI({
           baseURL: 'https://api.groq.com/openai/v1',
           apiKey: 'sk-invalid-key-test-only',
         });
 
-        const wrapped = wrapOpenAI(invalidClient, {
+        const wrapped = wrap(invalidClient, {
           agentId: 'invalid-key-stream',
           complianceMode: 'strict',
         });

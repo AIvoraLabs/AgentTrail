@@ -1,4 +1,3 @@
-import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
 import type OpenAI from 'openai';
 import type { AgentConfig, CandidateData, InvestmentScenario } from './types';
 
@@ -43,17 +42,19 @@ Consider MiFID II suitability requirements, risk tolerance, and diversification 
  * ```
  */
 export class AgentSimulator {
-  private wrappedClient: ReturnType<typeof wrapOpenAI>;
+  private wrappedClient: OpenAI | undefined;
   private config: AgentConfig;
   private rawClient: OpenAI;
 
   /**
    * Create a new agent simulator.
    *
-   * Wraps the provided OpenAI client with {@link wrapOpenAI} so all
-   * completions generate audit receipts automatically. The constructor
-   * itself does NOT throw on missing API key — API calls will fail
-   * with a descriptive error.
+   * The client is lazily wrapped with {@link wrapOpenAI} via dynamic import
+   * on the first API call. This avoids a circular build dependency between
+   * @aivoralabs/agenttrail and @aivoralabs/agenttrail-openai.
+   *
+   * The constructor itself does NOT throw on missing API key — API calls
+   * will fail with a descriptive error.
    *
    * @param client - An OpenAI-compatible client instance (e.g. Groq SDK with `baseURL: 'https://api.groq.com/openai/v1'`).
    * @param config - Agent configuration including agent ID, storage backend, and system prompt.
@@ -66,11 +67,23 @@ export class AgentSimulator {
   constructor(client: OpenAI, config: AgentConfig) {
     this.rawClient = client;
     this.config = config;
-    this.wrappedClient = wrapOpenAI(client, {
-      agentId: config.agentId,
-      storage: config.storage,
-      complianceMode: 'strict',
-    });
+  }
+
+  /**
+   * Lazily wraps the raw OpenAI client with {@link wrapOpenAI} via dynamic import.
+   * The import resolves at runtime, not build time, to avoid the circular
+   * dependency between @aivoralabs/agenttrail and @aivoralabs/agenttrail-openai.
+   */
+  private async ensureWrapped(): Promise<OpenAI> {
+    if (!this.wrappedClient) {
+      const { wrapOpenAI } = await import('@aivoralabs/agenttrail-openai');
+      this.wrappedClient = wrapOpenAI(this.rawClient, {
+        agentId: this.config.agentId,
+        storage: this.config.storage,
+        complianceMode: 'strict',
+      });
+    }
+    return this.wrappedClient;
   }
 
   /**
@@ -109,7 +122,8 @@ export class AgentSimulator {
    */
   async legalConsultation(topic: string): Promise<string> {
     this.requireApiKey();
-    const completion = await this.wrappedClient.chat.completions.create({
+    const client = await this.ensureWrapped();
+    const completion = await client.chat.completions.create({
       model: this.config.model ?? DEFAULT_MODEL,
       messages: [
         { role: 'system', content: this.config.systemPrompt ?? LEGAL_SYSTEM_PROMPT },
@@ -150,7 +164,8 @@ export class AgentSimulator {
       'Please evaluate this candidate and provide a hiring recommendation.',
     ].join('\n');
 
-    const completion = await this.wrappedClient.chat.completions.create({
+    const client = await this.ensureWrapped();
+    const completion = await client.chat.completions.create({
       model: this.config.model ?? DEFAULT_MODEL,
       messages: [
         { role: 'system', content: this.config.systemPrompt ?? HR_SYSTEM_PROMPT },
@@ -188,7 +203,8 @@ export class AgentSimulator {
       'Please assess this investment for regulatory compliance and provide advice.',
     ].join('\n');
 
-    const completion = await this.wrappedClient.chat.completions.create({
+    const client = await this.ensureWrapped();
+    const completion = await client.chat.completions.create({
       model: this.config.model ?? DEFAULT_MODEL,
       messages: [
         { role: 'system', content: this.config.systemPrompt ?? FINANCIAL_SYSTEM_PROMPT },

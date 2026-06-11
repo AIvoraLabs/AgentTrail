@@ -77,9 +77,6 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@aivoralabs/agenttrail-openai':
-        specifier: workspace:*
-        version: link:../openai
       '@faker-js/faker':
         specifier: ^9.0.0
         version: 9.9.0
