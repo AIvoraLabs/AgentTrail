@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { verifyChains } from '@aivoralabs/agenttrail';
 import type { AuditReport, KeyEntry, Receipt } from '@aivoralabs/agenttrail';
+import { renderHtmlReport } from './html-renderer';
 
 /**
  * Parse receipt data from a string (JSON array or JSONL).
@@ -51,6 +52,8 @@ function parseArgs(args: string[]): {
   verifySignatures: boolean;
   publicKey?: string;
   output?: string;
+  entityName?: string;
+  format?: string;
 } {
   const result = {
     command: '',
@@ -58,6 +61,8 @@ function parseArgs(args: string[]): {
     verifySignatures: false,
     publicKey: undefined as string | undefined,
     output: undefined as string | undefined,
+    entityName: undefined as string | undefined,
+    format: undefined as string | undefined,
   };
 
   // First non-flag token is the command
@@ -77,6 +82,10 @@ function parseArgs(args: string[]): {
         result.verifySignatures = true;
       } else if (arg === '--public-key' && i + 1 < rest.length) {
         result.publicKey = rest[++i];
+      } else if (arg === '--entity-name' && i + 1 < rest.length) {
+        result.entityName = rest[++i];
+      } else if (arg === '--format' && i + 1 < rest.length) {
+        result.format = rest[++i];
       } else if (arg === '--output' && i + 1 < rest.length) {
         result.output = rest[++i];
       } else if (!result.filePath && !arg.startsWith('--')) {
@@ -93,7 +102,7 @@ function parseArgs(args: string[]): {
  */
 export async function main(): Promise<void> {
   const parsedArgs = parseArgs(process.argv.slice(2));
-  const { command, filePath, verifySignatures, publicKey, output } = parsedArgs;
+  const { command, filePath, verifySignatures, publicKey, output, entityName, format } = parsedArgs;
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
@@ -103,7 +112,9 @@ Usage:
   audit-receipt verify <file>                           Verify hash chain integrity
   audit-receipt verify <file> --verify-signatures       Also verify Ed25519 signatures
                           --public-key <base64>         Public key (required with --verify-signatures)
-                          --output <path>               Write AuditReport JSON to file
+                          --output <path>               Write report to file (JSON or HTML)
+                          --format <format>             Report format: json (default) or html
+                          --entity-name <name>          Entity name for the HTML report
   audit-receipt --help                                  Show this help
 
 File format: JSON array (.json) or JSONL (.jsonl)
@@ -213,57 +224,78 @@ File format: JSON array (.json) or JSONL (.jsonl)
       }
     }
 
-    // --output: write AuditReport JSON
+    // --output: write AuditReport (JSON or HTML)
     if (output) {
-      const perReceipt: AuditReport['per_receipt'] = [];
-      let idx = 0;
-      for (const [, { receipts: agentR, result }] of agents) {
-        for (let j = 0; j < agentR.length; j++) {
-          const r = agentR[j];
-          const hashValid =
-            result.hashChainIntact ||
-            (result.brokenAtIndex !== undefined && j < result.brokenAtIndex);
-          const sigValid =
-            result.signaturesValid ||
-            !result.signatureErrors.some((e) => e.receiptId === r.receipt_id);
-          perReceipt.push({
-            index: idx++,
-            receipt_id: r.receipt_id,
-            hash_valid: hashValid,
-            signature_valid: sigValid,
-            agent_id: r.agent_id,
-            timestamp_start: r.payload.timestamp_start,
-          });
+      const isHtml = output.endsWith('.html') || format === 'html';
+
+      if (isHtml) {
+        const signatureStatus = verifySignatures
+          ? `${totalVerifiedSignatures} de ${totalReceipts} firmas válidas`
+          : 'Verificación de firmas no solicitada';
+
+        const htmlContent = renderHtmlReport({
+          entityName,
+          cliCommand: `audit-receipt verify ${filePath} --output ${output}`,
+          agentResults: allResults,
+          allReceipts: receipts,
+          signatureStatus,
+        });
+        writeFileSync(output, htmlContent, 'utf-8');
+        console.log(`\nReporte de auditoría escrito a: ${output}`);
+      } else {
+        // Legacy JSON report
+        const perReceipt: AuditReport['per_receipt'] = [];
+        let idx = 0;
+        for (const [, { receipts: agentR, result }] of agents) {
+          for (let j = 0; j < agentR.length; j++) {
+            const r = agentR[j];
+            const hashValid =
+              result.hashChainIntact ||
+              (result.brokenAtIndex !== undefined && j < result.brokenAtIndex);
+            const sigValid =
+              result.signaturesValid ||
+              !result.signatureErrors.some((e) => e.receiptId === r.receipt_id);
+            perReceipt.push({
+              index: idx++,
+              receipt_id: r.receipt_id,
+              hash_valid: hashValid,
+              signature_valid: sigValid,
+              agent_id: r.agent_id,
+              timestamp_start: r.payload.timestamp_start,
+            });
+          }
         }
+
+        const report: AuditReport = {
+          report_version: '1.0',
+          generated_at: new Date().toISOString(),
+          tool: 'audit-receipt verify',
+          source_file: filePath,
+          summary: {
+            verdict: overallIntact ? 'intact' : 'broken',
+            total_receipts: totalReceipts,
+            hash_chain_intact: totalHashChainIntact,
+            signatures_valid: totalSignaturesValid,
+            verified_signatures: totalVerifiedSignatures,
+          },
+          agents: Array.from(allResults.entries()).map(
+            ([agentId, { receipts: agentR, result }]) => ({
+              agent_id: agentId,
+              receipts_count: agentR.length,
+              verdict: (result.valid ? 'intact' : 'broken') as 'intact' | 'broken',
+              broken_at_index: result.brokenAtIndex,
+              broken_receipt_id:
+                result.brokenAtIndex !== undefined
+                  ? agentR[result.brokenAtIndex]?.receipt_id
+                  : undefined,
+            }),
+          ),
+          per_receipt: perReceipt,
+        };
+
+        writeFileSync(output, JSON.stringify(report, null, 2));
+        console.log(`\nReport written to: ${output}`);
       }
-
-      const report: AuditReport = {
-        report_version: '1.0',
-        generated_at: new Date().toISOString(),
-        tool: 'audit-receipt verify',
-        source_file: filePath,
-        summary: {
-          verdict: overallIntact ? 'intact' : 'broken',
-          total_receipts: totalReceipts,
-          hash_chain_intact: totalHashChainIntact,
-          signatures_valid: totalSignaturesValid,
-          verified_signatures: totalVerifiedSignatures,
-        },
-        agents: Array.from(allResults.entries()).map(([agentId, { receipts: agentR, result }]) => ({
-          agent_id: agentId,
-          receipts_count: agentR.length,
-          verdict: (result.valid ? 'intact' : 'broken') as 'intact' | 'broken',
-          broken_at_index: result.brokenAtIndex,
-          broken_receipt_id:
-            result.brokenAtIndex !== undefined
-              ? agentR[result.brokenAtIndex]?.receipt_id
-              : undefined,
-        })),
-        per_receipt: perReceipt,
-      };
-
-      writeFileSync(output, JSON.stringify(report, null, 2));
-      console.log(`\nReport written to: ${output}`);
     }
 
     if (!overallIntact) {
