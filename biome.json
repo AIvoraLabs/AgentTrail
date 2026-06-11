@@ -38,5 +38,30 @@
   "files": {
     "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts"],
     "ignore": ["**/dist/**", "**/node_modules/**", "**/__tests__/**"]
-  }
+  },
+  "overrides": [
+    {
+      "include": ["apps/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsoleLog": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["packages/cli/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsoleLog": "off"
+          },
+          "style": {
+            "useTemplate": "off"
+          }
+        }
+      }
+    }
+  ]
 }

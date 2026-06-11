@@ -11,9 +11,9 @@
  */
 
 import 'dotenv/config';
-import OpenAI from 'openai';
-import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
 import { AuditReceipt } from '@aivoralabs/agenttrail';
+import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
+import OpenAI from 'openai';
 
 const apiKey = process.env.OPENAI_API_KEY;
 
