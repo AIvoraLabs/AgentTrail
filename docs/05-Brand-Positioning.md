@@ -108,7 +108,7 @@ npm install @aivoralabs/agenttrail
 
 ```typescript
 import { wrapLanguageModel } from 'ai';
-import { auditReceiptMiddleware } from '@aivoralabs/agenttrail';
+import { auditReceiptMiddleware } from '@aivoralabs/agenttrail-vercel';
 
 const model = wrapLanguageModel({
   model: yourModel,
@@ -132,7 +132,7 @@ const model = wrapLanguageModel({
 |-----------|-------------|
 | **Rol** | CTO o Head of AI |
 | **Empresa** | SaaS europeo, 50-500 empleados |
-| **Stack** | Node/TypeScript, OpenAI, Vercel, LangChain |
+| **Stack** | Node/TypeScript, OpenAI, Vercel |
 | **Dolor** | "OneTrust es demasiado caro y ServiceNow es demasiado complejo" |
 | **Trigger** | Auditoría inminente o consulta de cliente enterprise sobre compliance |
 | **Objeción común** | "¿Por qué no usar Datadog para esto?" → Respuesta: Datadog no ofrece inmutabilidad jurídica ni formato legible para auditor |

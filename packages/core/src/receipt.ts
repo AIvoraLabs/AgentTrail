@@ -1,4 +1,5 @@
 import { v7 as uuidv7 } from 'uuid';
+import { ComplianceError } from './errors';
 import {
   canonicalJSON,
   chainHash,
@@ -8,6 +9,7 @@ import {
 } from './hash-chain';
 import { redactPII } from './redact';
 import { computeKeyId, generateKeyPair, sign } from './signer';
+import type { StorageBackend } from './storage';
 import { SecureClock } from './timestamp';
 import type {
   AuditReceiptConfig,
@@ -19,7 +21,22 @@ import type {
   SerializedPolicyCheck,
   SerializedToolCall,
 } from './types';
-import { validateInteraction, validateKeyMaterial } from './validate';
+import { validateInteraction, validateKeyMaterial, validateMetadata } from './validate';
+
+/**
+ * Remove keys with `undefined` values from a metadata object.
+ * This is a safety net — wrappers should not pass undefined values,
+ * but we defend against it to prevent Zod rejection in validateMetadata().
+ */
+function stripUndefinedValues(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
 
 // Re-export types and verifyChain
 export type {
@@ -43,6 +60,7 @@ export class AuditReceipt {
   private secureClock: SecureClock;
   private redactConfig?: RedactConfig;
   private complianceConfig?: ComplianceConfig;
+  private storage?: StorageBackend;
 
   constructor(config: AuditReceiptConfig) {
     this.agentId = config.agentId;
@@ -56,6 +74,7 @@ export class AuditReceipt {
     this.secureClock = new SecureClock(config.driftThresholdMs);
     this.redactConfig = config.redactConfig;
     this.complianceConfig = config.complianceConfig;
+    this.storage = config.storage;
   }
 
   private async ensureKeyPair(): Promise<void> {
@@ -72,6 +91,22 @@ export class AuditReceipt {
    */
   async record(interaction: Interaction): Promise<Receipt> {
     validateInteraction(interaction);
+
+    // Strip undefined values before validation — defensive against wrapper bugs
+    if (interaction.metadata) {
+      interaction.metadata = stripUndefinedValues(interaction.metadata);
+
+      // Auto-serialize tool_calls arrays to strings to avoid depth violations
+      // This protects against any wrapper passing raw tool call objects
+      if (Array.isArray(interaction.metadata.tool_calls)) {
+        interaction.metadata = {
+          ...interaction.metadata,
+          tool_calls: JSON.stringify(interaction.metadata.tool_calls),
+        };
+      }
+    }
+
+    validateMetadata(interaction.metadata);
 
     try {
       await this.ensureKeyPair();
@@ -112,7 +147,6 @@ export class AuditReceipt {
         timestamp_start: tsStart.iso,
         timestamp_end: tsEnd.iso,
         input: finalInput,
-        input_hash: inputHash,
         output: interaction.output,
         model: interaction.model,
         provider: interaction.provider,
@@ -120,6 +154,10 @@ export class AuditReceipt {
         clock_drift_detected: tsStart.drift_detected || tsEnd.drift_detected,
         key_id: computeKeyId(this.publicKey),
       };
+
+      if (inputHash) {
+        payload.input_hash = inputHash;
+      }
 
       if (interaction.tokensPrompt !== undefined) {
         payload.tokens_prompt = interaction.tokensPrompt;
@@ -173,6 +211,22 @@ export class AuditReceipt {
 
       this.receipts.push(receipt);
       this.lastHash = hash;
+
+      // Persist to storage if configured
+      if (this.storage) {
+        try {
+          await this.storage.append(receipt);
+        } catch (cause) {
+          const error = cause instanceof Error ? cause : new Error(String(cause));
+          if (this.complianceConfig?.mode === 'strict') {
+            throw new ComplianceError('Failed to persist receipt to storage', { cause: error });
+          }
+          if (this.complianceConfig?.onComplianceError) {
+            this.complianceConfig.onComplianceError(error);
+          }
+          console.warn(`[AgentTrail] Failed to persist receipt: ${error.message}`);
+        }
+      }
 
       return receipt;
     } catch (err) {

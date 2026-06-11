@@ -24,6 +24,19 @@ export interface Interaction {
   toolCalls?: ToolCall[];
   policyCheck?: PolicyCheck;
   humanVerifier?: string;
+  /**
+   * Optional key-value metadata attached to the receipt.
+   *
+   * Constraints:
+   * - Max 50 top-level keys
+   * - Nesting depth ≤ 4 (metadata object itself is depth 1)
+   * - Values must be JSON-safe: strings, numbers, booleans, null, arrays, plain objects
+   * - Strings ≤ 1000 chars, arrays ≤ 100 items
+   *
+   * **Important**: Do NOT nest provider-specific objects directly (e.g., OpenAI tool_calls).
+   * Serialize them as JSON strings first to stay within depth limits.
+   * The SDK auto-serializes `tool_calls` arrays as a safety measure.
+   */
   metadata?: Record<string, unknown>;
 }
 
@@ -102,6 +115,44 @@ export interface TimestampResult {
   drift_detected: boolean;
 }
 
+export interface VerificationResult {
+  valid: boolean;
+  hashChainIntact: boolean;
+  signaturesValid: boolean;
+  verifiedSignatures: number;
+  signatureErrors: { receiptId: string; error: string }[];
+  brokenAtIndex?: number;
+}
+
+export interface AuditReport {
+  report_version: string;
+  generated_at: string;
+  tool: string;
+  source_file: string;
+  summary: {
+    verdict: 'intact' | 'broken';
+    total_receipts: number;
+    hash_chain_intact: boolean;
+    signatures_valid: boolean;
+    verified_signatures: number;
+  };
+  agents: {
+    agent_id: string;
+    receipts_count: number;
+    verdict: 'intact' | 'broken';
+    broken_at_index?: number;
+    broken_receipt_id?: string;
+  }[];
+  per_receipt: {
+    index: number;
+    receipt_id: string;
+    hash_valid: boolean;
+    signature_valid: boolean;
+    agent_id: string;
+    timestamp_start: string;
+  }[];
+}
+
 export interface AuditReceiptConfig {
   agentId: string;
   version?: string;
@@ -111,4 +162,6 @@ export interface AuditReceiptConfig {
   redactConfig?: RedactConfig;
   driftThresholdMs?: number;
   maxKeys?: number;
+  /** Optional persistent storage backend. When provided, receipts are persisted to storage. */
+  storage?: import('./storage').StorageBackend;
 }

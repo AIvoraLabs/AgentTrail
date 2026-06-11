@@ -1,5 +1,29 @@
 # Security Review — AgentTrail
 
+## Updated Findings — 2026-06-10
+
+After 3 SDD cycles, the following findings have been resolved:
+
+| Finding | Status |
+|---------|--------|
+| CRITICAL: Broken canonical JSON | ✅ FIXED — recursive key sorting in canonicalJSON() |
+| HIGH: No input validation | ✅ FIXED — validateInteraction() validates model/provider |
+| HIGH: PII not redacted | ✅ FIXED — redactPII() with configurable rules + 100KB cap |
+| HIGH: Private key in memory | ✅ FIXED — Uint8Array internally via IKeyStore |
+| MEDIUM: No CLI receipt validation | ✅ FIXED — --verify-signatures flag + brokenAtIndex |
+| LOW: bytesToBase64 spread | ✅ FIXED — Array.from approach |
+
+Partially resolved:
+- CRITICAL: Fail-open behavior | PARTIALLY — Vercel AI pre-flight gate added, but OpenAI wrapper still has .catch(() => {})
+- MEDIUM: Streaming ignored (OpenAI) | STILL OPEN — non-streaming only
+- MEDIUM: Metadata blindly copied | STILL OPEN — no validation
+
+Fully open (unresolved):
+- LOW: Empty chain returns true | OPEN
+- LOW: Error message leaks | OPEN
+
+---
+
 ## Executive Summary
 
 AgentTrail es un SDK bien arquitecturado con un modelo de seguridad sólido heredado de VCP v1.1 (VeritasChain Protocol). Los primitivos criptográficos son correctos: SHA-256 via Web Crypto API (nativo, zero-dep), Ed25519 signing via `@noble/ed25519` (auditado, pure-JS), y UUIDv7 para identificación de receipts. La intención central — audit trails inmutables con verificación criptográfica de cadena — está correctamente implementada a nivel algorítmico.

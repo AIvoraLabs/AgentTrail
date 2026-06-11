@@ -1,5 +1,7 @@
 # PRD — AgentTrail
 
+> **Nota histórica**: Este PRD fue escrito antes de la implementación. La API actual puede diferir. Ver MIGRATION.md para detalles.
+
 > **Product Requirements Document**
 > Versión: 1.0
 > Estado: Borrador pre-MVP
