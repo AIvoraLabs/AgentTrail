@@ -5,7 +5,8 @@ interface Env {
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
-    const { email, company } = await context.request.json() as { email?: string; company?: string };
+    const raw = await context.request.text();
+    const { email, company } = JSON.parse(raw) as { email?: string; company?: string };
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ success: false, error: 'Invalid email address.' }), {
@@ -42,21 +43,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Treat duplicate contact as success (Brevo returns 400 with duplicate_parameter)
     if (resp.status === 400) {
-      const errBody = await resp.json() as { code?: string; message?: string };
-      if (errBody?.code === 'duplicate_parameter') {
-        return new Response(JSON.stringify({ success: true, message: "You're on the list. We'll reach out when AgentTrail Cloud launches." }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
+      const errText = await resp.text();
+      try {
+        const errBody = JSON.parse(errText) as { code?: string; message?: string };
+        if (errBody?.code === 'duplicate_parameter') {
+          return new Response(JSON.stringify({ success: true, message: "You're on the list. We'll reach out when AgentTrail Cloud launches." }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      } catch {
+        // If JSON parse fails, fall through to generic error below
       }
+      console.error('Brevo API error', resp.status, errText);
+      return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
-
-    const errBody = await resp.text();
-    console.error('Brevo API error', resp.status, errBody);
-    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('Waitlist API error:', msg);
