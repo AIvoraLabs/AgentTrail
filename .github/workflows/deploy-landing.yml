@@ -53,13 +53,25 @@ jobs:
       - name: Build landing
         run: pnpm --filter @agenttrail/landing build
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (Production)
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        working-directory: apps/landing
+        shell: bash
+        run: |
+          npx wrangler pages deploy dist \
+            --project-name=agenttrail
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy to Cloudflare Pages (Preview)
+        if: github.event_name == 'pull_request'
         working-directory: apps/landing
         shell: bash
         run: |
           npx wrangler pages deploy dist \
             --project-name=agenttrail \
-            --branch=${{ github.head_ref || github.ref_name }}
+            --branch=${{ github.head_ref }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
