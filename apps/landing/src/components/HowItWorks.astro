@@ -16,12 +16,23 @@
         <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center font-heading font-bold text-xl">
           1
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <h3 class="font-heading text-xl font-bold mb-2">Install the SDK</h3>
           <p class="text-slate-600 dark:text-slate-400 mb-4">
             Add AgentTrail to your project with a single command. Works with OpenAI, Vercel AI SDK, or as a standalone wrapper.
           </p>
-          <pre class="rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 overflow-x-auto text-sm font-mono"><span class="text-brand-400">$</span> <span class="text-slate-300">npm install @aivoralabs/agenttrail</span></pre>
+          <div class="relative group">
+          <pre class="rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 overflow-x-auto w-full text-sm font-mono"><span class="text-brand-400">$</span> <span class="text-slate-300">npm install @aivoralabs/agenttrail</span></pre>
+          <button data-copy="npm install @aivoralabs/agenttrail" class="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 cursor-pointer" aria-label="Copy code">
+            <svg class="copy-icon block w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            <svg class="check-icon hidden w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+          </div>
         </div>
       </div>
 
@@ -30,18 +41,34 @@
         <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center font-heading font-bold text-xl">
           2
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <h3 class="font-heading text-xl font-bold mb-2">Every decision generates a signed receipt</h3>
           <p class="text-slate-600 dark:text-slate-400 mb-4">
             Wrap your agent once. Each call automatically produces a cryptographic receipt with SHA-256 hash, Ed25519 signature, and full interaction metadata.
           </p>
-          <pre class="rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 overflow-x-auto text-sm font-mono">
+          <div class="relative group">
+          <pre class="rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 overflow-x-auto w-full text-sm font-mono">
 <span class="text-purple-400">import</span> <span class="text-slate-300">&#123; wrapOpenAI &#125;</span> <span class="text-purple-400">from</span> <span class="text-green-400">'@aivoralabs/agenttrail-openai'</span><span class="text-slate-300">;</span>
 <span class="text-slate-300">
 const client = wrapOpenAI(openai, &#123;</span>
 <span class="text-slate-300">  agentId: </span><span class="text-green-400">'legal-ai'</span><span class="text-slate-300">,</span>
 <span class="text-slate-300">  complianceMode: </span><span class="text-green-400">'strict'</span><span class="text-slate-300">,</span>
 <span class="text-slate-300">&#125;);</span></pre>
+          <button data-copy="import { wrapOpenAI } from '@aivoralabs/agenttrail-openai';
+
+const client = wrapOpenAI(openai, {
+  agentId: 'legal-ai',
+  complianceMode: 'strict',
+});" class="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 cursor-pointer" aria-label="Copy code">
+            <svg class="copy-icon block w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            <svg class="check-icon hidden w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+          </div>
         </div>
       </div>
 
@@ -50,19 +77,68 @@ const client = wrapOpenAI(openai, &#123;</span>
         <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center font-heading font-bold text-xl">
           3
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <h3 class="font-heading text-xl font-bold mb-2">Verify the chain with one CLI command</h3>
           <p class="text-slate-600 dark:text-slate-400 mb-4">
             Generate a self-contained HTML audit report. Green badge = chain intact. Red badge = tampered. Ready for your auditor.
           </p>
-          <pre class="rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 overflow-x-auto text-sm font-mono">
-<span class="text-brand-400">$</span> <span class="text-slate-300">npx agenttrail verify audit-log.jsonl --output report.html</span>
+          <div class="relative group">
+          <pre class="rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 overflow-x-auto w-full text-sm font-mono">
+<span class="text-brand-400">$</span> <span class="text-slate-300">npx @aivoralabs/agenttrail-cli verify audit-log.jsonl --output report.html</span>
+<span class="text-slate-500"># or if installed globally:</span>
+<span class="text-brand-400">$</span> <span class="text-slate-300">audit-receipt verify audit-log.jsonl --output report.html</span>
 <span class="text-slate-500">✓ Chain intact: 150 receipts verified</span>
 <span class="text-slate-500">✓ Signatures valid: 150/150</span>
 <span class="text-slate-500">→ HTML report written to report.html</span></pre>
+          <button data-copy="npx @aivoralabs/agenttrail-cli verify audit-log.jsonl --output report.html" class="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 cursor-pointer" aria-label="Copy code">
+            <svg class="copy-icon block w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            <svg class="check-icon hidden w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+          </div>
         </div>
       </div>
     </div>
+
+    <script>
+      (function () {
+        var buttons = document.querySelectorAll('[data-copy]');
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].addEventListener('click', function () {
+            var text = this.getAttribute('data-copy');
+            var copyIcon = this.querySelector('.copy-icon');
+            var checkIcon = this.querySelector('.check-icon');
+            navigator.clipboard.writeText(text).then(function () {
+              copyIcon.classList.add('hidden');
+              checkIcon.classList.remove('hidden');
+              setTimeout(function () {
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+              }, 2000);
+            }).catch(function () {
+              var textarea = document.createElement('textarea');
+              textarea.value = text;
+              textarea.style.position = 'fixed';
+              textarea.style.opacity = '0';
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textarea);
+              copyIcon.classList.add('hidden');
+              checkIcon.classList.remove('hidden');
+              setTimeout(function () {
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+              }, 2000);
+            });
+          });
+        }
+      })();
+    </script>
 
     <!-- Audit Report Preview -->
     <div class="mt-16 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900/50">
@@ -82,7 +158,7 @@ const client = wrapOpenAI(openai, &#123;</span>
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
             <p class="text-slate-500 mb-1">Agents</p>
             <p class="font-bold text-slate-900 dark:text-slate-100">3</p>

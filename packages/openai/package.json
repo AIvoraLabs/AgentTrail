@@ -1,6 +1,6 @@
 {
   "name": "@aivoralabs/agenttrail-openai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAI SDK wrapper for AgentTrail audit receipts",
   "license": "MIT",
   "type": "module",
@@ -39,5 +39,28 @@
   },
   "engines": {
     "node": ">=22.0.0"
-  }
+  },
+  "homepage": "https://agenttrail.aivoralabs.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AiVoraLabs/agenttrail.git"
+  },
+  "author": "AivoraLabs <hello@aivoralabs.org>",
+  "keywords": [
+    "ai-compliance",
+    "eu-ai-act",
+    "audit-trail",
+    "ai-agents",
+    "article-12",
+    "hash-chain",
+    "cryptographic-receipts",
+    "compliance",
+    "ai-governance",
+    "audit",
+    "llm",
+    "openai",
+    "openai-sdk",
+    "gpt",
+    "chat-completions"
+  ]
 }

@@ -54,7 +54,7 @@ const receipt = await auditor.record({
 **Independent verification.** The CLI works 100% offline:
 
 ```bash
-npx agenttrail verify audit-log.jsonl --output report.html
+npx audit-receipt verify audit-log.jsonl --output report.html
 ```
 
 Open `report.html` in a browser. Green badge = chain intact. Red badge = tampered.
@@ -125,6 +125,27 @@ The SDK is and always will be MIT. Free to use, audit, fork, and integrate.
 AgentTrail Cloud (dashboard, analytics, SSO) is a separate paid product for teams that want managed compliance at scale.
 
 [agenttrail.cloud](https://agenttrail.cloud) · [Docs](https://agenttrail.aivoralabs.org) · [Contributing](CONTRIBUTING.md)
+
+---
+
+## Security & Governance
+
+AgentTrail is designed with security-first principles:
+
+- **Fail-closed**: If receipt writing fails, the agent does NOT respond
+- **Hash chain integrity**: SHA-256 chaining prevents tampering — any modification breaks the chain
+- **Ed25519 signatures**: Every receipt is cryptographically signed
+- **Zero data retention**: Receipts stay in your infrastructure — AgentTrail never sees them
+
+For the full security review, audit methodology, and threat model, see [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
+
+### Supply Chain
+
+Packages are published from GitHub Actions via [changesets](https://github.com/changesets/changesets) with `NPM_TOKEN` authentication. The release workflow runs tests, builds, and publishes all packages automatically when version PRs merge to `main`.
+
+### Content Security Policy
+
+The landing page on Cloudflare Pages is deployed with a strict CSP. Inline scripts (IIFE pattern) are allowed via `script-src 'self' 'unsafe-inline'`. No external scripts, styles, or resources are loaded from third-party domains.
 
 ---
 

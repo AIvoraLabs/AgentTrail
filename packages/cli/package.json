@@ -1,12 +1,12 @@
 {
   "name": "@aivoralabs/agenttrail-cli",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "CLI for AgentTrail audit receipt verification",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "audit-receipt": "./dist/index.js"
+    "audit-receipt": "dist/index.js"
   },
   "files": [
     "dist"
@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsup src/index.ts --format esm --watch",
+    "prepack": "pnpm run build",
     "clean": "rm -rf dist",
     "test:coverage": "vitest run --coverage"
   },
@@ -33,5 +34,29 @@
   },
   "engines": {
     "node": ">=22.0.0"
-  }
+  },
+  "homepage": "https://agenttrail.aivoralabs.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AiVoraLabs/agenttrail.git"
+  },
+  "author": "AivoraLabs <hello@aivoralabs.org>",
+  "keywords": [
+    "ai-compliance",
+    "eu-ai-act",
+    "audit-trail",
+    "ai-agents",
+    "article-12",
+    "hash-chain",
+    "cryptographic-receipts",
+    "compliance",
+    "ai-governance",
+    "audit",
+    "llm",
+    "cli",
+    "command-line",
+    "audit-tool",
+    "html-report",
+    "verification"
+  ]
 }
