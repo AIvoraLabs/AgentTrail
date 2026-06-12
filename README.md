@@ -54,7 +54,7 @@ const receipt = await auditor.record({
 **Independent verification.** The CLI works 100% offline:
 
 ```bash
-npx agenttrail verify audit-log.jsonl --output report.html
+npx audit-receipt verify audit-log.jsonl --output report.html
 ```
 
 Open `report.html` in a browser. Green badge = chain intact. Red badge = tampered.
@@ -139,9 +139,9 @@ AgentTrail is designed with security-first principles:
 
 For the full security review, audit methodology, and threat model, see [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
 
-### npm Provenance
+### Supply Chain
 
-All published packages include [npm provenance](https://docs.npmjs.com/generating-provenance-statements) for supply chain verification. Each package is built and published from this repository's GitHub Actions with SLSA build provenance attestations.
+Packages are published from GitHub Actions via [changesets](https://github.com/changesets/changesets) with `NPM_TOKEN` authentication. The release workflow runs tests, builds, and publishes all packages automatically when version PRs merge to `main`.
 
 ### Content Security Policy
 

@@ -1,12 +1,12 @@
 {
   "name": "@aivoralabs/agenttrail-cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "CLI for AgentTrail audit receipt verification",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "audit-receipt": "./dist/index.js"
+    "audit-receipt": "dist/index.js"
   },
   "files": [
     "dist"
@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsup src/index.ts --format esm --watch",
+    "prepack": "pnpm run build",
     "clean": "rm -rf dist",
     "test:coverage": "vitest run --coverage"
   },
