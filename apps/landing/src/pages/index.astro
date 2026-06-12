@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import Hero from '../components/Hero.astro';
+import Problem from '../components/Problem.astro';
+import Solution from '../components/Solution.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import BuiltFor from '../components/BuiltFor.astro';
+import Pricing from '../components/Pricing.astro';
+import CTA from '../components/CTA.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="AgentTrail — AI made decisions. We keep the receipts."
+  description="Cryptographic audit trails for AI agents. Comply with EU AI Act Article 12 using an open-source SDK that integrates in minutes."
+>
+  <ThemeToggle />
+  <Hero />
+  <Problem />
+  <Solution />
+  <HowItWorks />
+  <BuiltFor />
+  <Pricing />
+  <CTA />
+  <Footer />
+</BaseLayout>

@@ -38,6 +38,13 @@
       "outputs": [
         "coverage/**"
       ]
+    },
+    "landing:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "landing:build": {
+      "outputs": ["apps/landing/dist/**"]
     }
   }
 }

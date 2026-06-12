@@ -1,0 +1,114 @@
+---
+const plans = [
+  {
+    name: 'Starter',
+    price: '$99',
+    sub: '/agent / month',
+    description: 'For small teams and early-stage AI deployments.',
+    features: [
+      'SDK with full receipt generation',
+      'SHA-256 hash chaining',
+      'Ed25519 digital signatures',
+      '10,000 receipts / month',
+      'CLI audit report',
+      'Community support',
+    ],
+    cta: 'Coming soon',
+    recommended: false,
+  },
+  {
+    name: 'Growth',
+    price: '$299',
+    sub: '/month · up to 3 agents',
+    description: 'For growing teams with multiple agents in production.',
+    features: [
+      'Everything in Starter',
+      'Up to 3 agents',
+      '50,000 receipts / month',
+      'Multi-agent dashboard',
+      'Email support',
+    ],
+    cta: 'Coming soon',
+    recommended: true,
+  },
+  {
+    name: 'Scale',
+    price: '$999',
+    sub: '/month · up to 10 agents',
+    description: 'For organizations with multiple AI systems.',
+    features: [
+      'Everything in Growth',
+      'Up to 10 agents',
+      'Unlimited receipts',
+      'Team dashboard',
+      'Priority support',
+    ],
+    cta: 'Coming soon',
+    recommended: false,
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    sub: '',
+    description: 'For large-scale deployments with custom requirements.',
+    features: [
+      'Everything in Scale',
+      'Unlimited agents',
+      'On-premise deployment',
+      'SSO / SAML',
+      'Custom integrations',
+      'Dedicated support',
+    ],
+    cta: 'Contact sales',
+    recommended: false,
+  },
+];
+---
+
+<section id="pricing" class="py-24 px-6 bg-white/50 dark:bg-black/20">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <p class="text-brand-600 dark:text-brand-400 text-sm font-semibold uppercase tracking-widest mb-3">Pricing</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
+        Simple pricing. No hidden fees.
+      </h2>
+      <p class="text-slate-600 dark:text-slate-400">
+        The SDK is free and open-source (MIT). AgentTrail Cloud adds dashboard, analytics, and SSO for teams.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {plans.map((plan) => (
+        <div class={`rounded-2xl p-6 border ${plan.recommended ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-900/50 relative flex flex-col`}>
+          {plan.recommended && (
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-brand-600 text-white text-xs font-semibold rounded-full">
+              Recommended
+            </span>
+          )}
+          <h3 class="font-heading text-lg font-bold mb-1">{plan.name}</h3>
+          <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">{plan.description}</p>
+          <div class="mb-6">
+            <span class="font-heading text-3xl font-extrabold">{plan.price}</span>
+            <span class="text-slate-500 text-sm">{plan.sub}</span>
+          </div>
+          <ul class="space-y-2.5 mb-8 flex-1">
+            {plan.features.map((feature) => (
+              <li class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <svg class="w-4 h-4 text-brand-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+                {feature}
+              </li>
+            ))}
+          </ul>
+          <a
+            href="#"
+            class={`block text-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${plan.recommended ? 'bg-brand-600 hover:bg-brand-700 text-white' : 'border border-slate-300 dark:border-slate-700 hover:border-brand-500/50 text-slate-700 dark:text-slate-300'}`}
+          >
+            {plan.cta}
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

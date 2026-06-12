@@ -1,0 +1,50 @@
+---
+const industries = [
+  {
+    name: 'LegalTech',
+    icon: '⚖️',
+    description: 'AI agents reviewing contracts, clauses, and case law. Every decision needs a traceable audit trail.',
+  },
+  {
+    name: 'HR Tech',
+    icon: '📋',
+    description: 'Automated candidate screening, evaluations, and hiring decisions. Prove fairness and compliance.',
+  },
+  {
+    name: 'Fintech',
+    icon: '🏦',
+    description: 'Credit scoring, fraud detection, risk assessment. Regulators require tamper-proof records.',
+  },
+  {
+    name: 'AI Agents',
+    icon: '🤖',
+    description: 'Autonomous agents making decisions in production. Know what your AI did and why.',
+  },
+];
+---
+
+<section class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+      <p class="text-brand-600 dark:text-brand-400 text-sm font-semibold uppercase tracking-widest mb-3">Built for</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
+        If your AI makes decisions that affect people,<br />
+        <span class="text-brand-500">you need AgentTrail</span>
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      {industries.map((industry) => (
+        <div class="rounded-2xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-brand-500/30 transition-colors flex gap-4 items-start">
+          <span class="text-2xl flex-shrink-0 w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+            {industry.icon}
+          </span>
+          <div>
+            <h3 class="font-heading font-bold text-lg mb-1">{industry.name}</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{industry.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

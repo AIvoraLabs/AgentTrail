@@ -1,0 +1,76 @@
+---
+import '../styles/globals.css';
+
+export interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://agenttrail.aivoralabs.org" />
+
+    <!-- Theme color -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#EEF0E9" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07090F" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AgentTrail",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Linux, macOS, Windows",
+      "description": "Cryptographic audit trails for AI agents. EU AI Act Article 12 compliance.",
+      "offers": {
+        "@type": "Offer",
+        "price": "99",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2027-12-31"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "AivoraLabs"
+      }
+    })} />
+
+    <!-- Theme FOUC prevention -->
+    <script>
+      (function () {
+        var theme = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-surface-light dark:bg-surface-dark text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+    <slot />
+  </body>
+</html>

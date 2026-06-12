@@ -1,0 +1,17 @@
+{
+  "name": "@agenttrail/landing",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}
