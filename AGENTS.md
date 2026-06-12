@@ -26,7 +26,8 @@ Este AGENTS.md también contiene el contexto completo para que OpenCode construy
 | **Hash (SHA-256)** | Web Crypto API (`crypto.subtle.digest`), nativo, zero-dep |
 | **Firma digital (Ed25519)** | `@noble/ed25519` (5KB, auditado cure53, zero-dep con `@noble/hashes`) |
 | **UUID v7** | `uuid` (RFC 9562, `import { v7 } from 'uuid'`) |
-| **Infra MVP** | GitHub + NPM + GitHub Pages (todo $0/mes) |
+| **Infra MVP** | GitHub + NPM + GitHub Pages + Cloudflare Pages (todo $0/mes) |
+| **Landing page** | Astro 6 + Tailwind CSS v4, `apps/landing/`, deploy a CF Pages via GitHub Actions |
 
 ### Naming
 
@@ -70,6 +71,7 @@ agenttrail/
 │       │   └── index.ts
 │       └── package.json
 ├── apps/
+│   ├── landing/           # Astro + Tailwind landing page (agenttrail.aivoralabs.org)
 │   ├── docs/              # VitePress documentation
 │   └── example/           # Proyecto ejemplo
 ├── package.json           # Root (workspaces)
@@ -78,6 +80,7 @@ agenttrail/
 ├── turbo.json
 ├── biome.json
 ├── .github/workflows/ci.yml
+├── .github/workflows/deploy-landing.yml     # Deploy landing a Cloudflare Pages
 ├── AGENTS.md              # Este mismo archivo
 ├── README.md
 ├── LICENSE                # MIT
@@ -118,6 +121,11 @@ Ver `knowledge-base/products-docs/` para especificaciones detalladas:
 - `03-Data-Schema.md` — Schema del receipt y API del SDK
 - `04-Integration-Spec.md` — Integraciones con Vercel AI SDK, OpenAI, LangChain
 - `05-Brand-Positioning.md` — Naming, tono, pricing, ICP
+
+### Reglas operativas
+
+- **No push automático**: OpenCode solo hace `git commit` local. El push lo hace el humano.
+- **No instalar dependencias sin update de lockfile**: Si se modifica `package.json`, correr `pnpm install --no-frozen-lockfile` y commitear el `pnpm-lock.yaml` junto al cambio.
 
 ### Lo que NO debe hacer OpenCode
 
