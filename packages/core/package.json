@@ -22,7 +22,8 @@
     "test:watch": "vitest",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "clean": "rm -rf dist",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "@noble/ed25519": "^2.2.0",
@@ -45,5 +46,25 @@
   },
   "engines": {
     "node": ">=22.0.0"
-  }
+  },
+  "homepage": "https://agenttrail.aivoralabs.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AiVoraLabs/agenttrail.git"
+  },
+  "author": "AivoraLabs <hello@aivoralabs.org>",
+  "keywords": [
+    "ai-compliance",
+    "eu-ai-act",
+    "audit-trail",
+    "ai-agents",
+    "article-12",
+    "hash-chain",
+    "cryptographic-receipts",
+    "compliance",
+    "ai-governance",
+    "audit",
+    "llm",
+    "openai"
+  ]
 }

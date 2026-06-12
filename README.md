@@ -128,6 +128,27 @@ AgentTrail Cloud (dashboard, analytics, SSO) is a separate paid product for team
 
 ---
 
+## Security & Governance
+
+AgentTrail is designed with security-first principles:
+
+- **Fail-closed**: If receipt writing fails, the agent does NOT respond
+- **Hash chain integrity**: SHA-256 chaining prevents tampering — any modification breaks the chain
+- **Ed25519 signatures**: Every receipt is cryptographically signed
+- **Zero data retention**: Receipts stay in your infrastructure — AgentTrail never sees them
+
+For the full security review, audit methodology, and threat model, see [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
+
+### npm Provenance
+
+All published packages include [npm provenance](https://docs.npmjs.com/generating-provenance-statements) for supply chain verification. Each package is built and published from this repository's GitHub Actions with SLSA build provenance attestations.
+
+### Content Security Policy
+
+The landing page on Cloudflare Pages is deployed with a strict CSP. Inline scripts (IIFE pattern) are allowed via `script-src 'self' 'unsafe-inline'`. No external scripts, styles, or resources are loaded from third-party domains.
+
+---
+
 ## Roadmap
 
 | Quarter | Feature |
