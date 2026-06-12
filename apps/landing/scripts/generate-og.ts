@@ -43,7 +43,7 @@ async function generateOgImage(): Promise<void> {
     ),
   );
 
-  const shieldUri = svgToDataUri(shieldSvg, 80, 98);
+  const shieldUri = svgToDataUri(shieldSvg, 160, 196);
 
   const svg = await satori(
     {
@@ -54,73 +54,68 @@ async function generateOgImage(): Promise<void> {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 1200,
-          height: 630,
+          width: 2400,
+          height: 1256,
           background: '#07090F',
-          padding: 60,
+          padding: 120,
           fontFamily: 'Bricolage Grotesque',
         },
         children: [
-          // Shield icon via <img>
           {
             type: 'img',
             props: {
               src: shieldUri,
-              width: 80,
-              height: 98,
+              width: 160,
+              height: 196,
               style: {
-                marginBottom: 24,
+                marginBottom: 48,
               },
             },
           },
-          // Title
           {
             type: 'div',
             props: {
               style: {
-                fontSize: 80,
+                fontSize: 160,
                 fontWeight: 800,
                 color: '#f1f5f9',
                 letterSpacing: '-0.02em',
-                marginBottom: 16,
+                marginBottom: 32,
               },
               children: 'AgentTrail',
             },
           },
-          // Tagline
           {
             type: 'div',
             props: {
               style: {
-                fontSize: 30,
+                fontSize: 60,
                 fontWeight: 600,
                 color: '#94a3b8',
-                marginBottom: 48,
+                marginBottom: 96,
               },
               children:
                 'EU AI Act Article 12 \u2014 Audit Trails for AI Agents',
             },
           },
-          // Divider line
           {
             type: 'div',
             props: {
               style: {
-                width: 480,
-                height: 1,
+                width: 960,
+                height: 2,
                 background: '#1e293b',
-                marginBottom: 40,
+                marginBottom: 80,
               },
             },
           },
-          // Tech badges row
           {
             type: 'div',
             props: {
               style: {
                 display: 'flex',
-                gap: '24px',
-                fontSize: 20,
+                gap: '48px',
+                fontSize: 40,
                 color: '#14b8a6',
                 fontFamily: 'DM Mono',
                 fontWeight: 500,
@@ -154,15 +149,14 @@ async function generateOgImage(): Promise<void> {
               ],
             },
           },
-          // URL
           {
             type: 'div',
             props: {
               style: {
-                fontSize: 18,
+                fontSize: 36,
                 color: '#475569',
                 fontFamily: 'DM Mono',
-                marginTop: 36,
+                marginTop: 72,
               },
               children: 'agenttrail.aivoralabs.org',
             },
@@ -171,8 +165,8 @@ async function generateOgImage(): Promise<void> {
       },
     },
     {
-      width: 1200,
-      height: 630,
+      width: 2400,
+      height: 1256,
       fonts: [
         {
           name: 'Bricolage Grotesque',
