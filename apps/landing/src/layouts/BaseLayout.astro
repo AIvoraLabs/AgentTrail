@@ -12,6 +12,13 @@ const { title, description } = Astro.props;
 <!DOCTYPE html>
 <html lang="en" data-theme="dark" class="overflow-x-hidden">
   <head>
+    <!-- pages.dev → production domain redirect -->
+    <script is:inline>
+      if (window.location.hostname === 'agenttrail.pages.dev') {
+        window.location.replace('https://agenttrail.aivoralabs.org' + window.location.pathname + window.location.search);
+      }
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
@@ -58,22 +65,23 @@ const { title, description } = Astro.props;
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
-      "@type": ["SoftwareApplication", "OpenSourceProject"],
+      "@type": "SoftwareApplication",
       "name": "AgentTrail",
       "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Linux, macOS, Windows",
-      "description": "Cryptographic audit trails for AI agents. EU AI Act Article 12 compliance. Open-source SDK with SHA-256 hash chain and Ed25519 signatures.",
+      "operatingSystem": "Any",
       "offers": {
-        "@type": "AggregateOffer",
-        "lowPrice": "0",
-        "highPrice": "999",
-        "priceCurrency": "USD"
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Open-source SDK, MIT license"
       },
+      "description": "Cryptographic audit trails for AI agents. EU AI Act Article 12 compliance.",
+      "url": "https://agenttrail.aivoralabs.org",
+      "license": "https://opensource.org/licenses/MIT",
       "author": {
         "@type": "Organization",
         "name": "AivoraLabs"
-      },
-      "license": "https://github.com/AiVoraLabs/agenttrail/blob/main/LICENSE"
+      }
     })} />
 
     <!-- Theme FOUC prevention -->

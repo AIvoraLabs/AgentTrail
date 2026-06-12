@@ -1,0 +1,205 @@
+---
+---
+
+<dialog
+  id="waitlist-modal"
+  class="fixed inset-0 z-[60] w-full max-w-md mx-auto p-0 rounded-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl open:flex open:flex-col"
+  aria-label="Join the waitlist"
+>
+  <!-- Close button -->
+  <button
+    id="waitlist-close"
+    class="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
+    aria-label="Close dialog"
+  >
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <!-- Form view -->
+  <div id="waitlist-form" class="p-8">
+    <h3 class="font-heading text-2xl font-extrabold tracking-tight mb-2">
+      Get early access
+    </h3>
+    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+      Be the first to know when AgentTrail Cloud launches. No spam, unsubscribe anytime.
+    </p>
+    <form id="waitlist-form-element" novalidate>
+      <div class="mb-4">
+        <label for="waitlist-email" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          Email <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="waitlist-email"
+          type="email"
+          name="email"
+          required
+          placeholder="you@company.com"
+          autocomplete="email"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
+        />
+      </div>
+      <div class="mb-6">
+        <label for="waitlist-company" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          Company
+        </label>
+        <input
+          id="waitlist-company"
+          type="text"
+          name="company"
+          placeholder="Acme Corp (optional)"
+          autocomplete="organization"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
+        />
+      </div>
+      <div id="waitlist-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
+      </div>
+      <button
+        id="waitlist-submit"
+        type="submit"
+        class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 disabled:cursor-not-allowed text-white font-semibold text-base transition-all duration-200 shadow-lg shadow-brand-600/25 flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <span id="waitlist-submit-text">Get early access</span>
+        <svg id="waitlist-spinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- Success view (hidden by default) -->
+  <div id="waitlist-success" class="hidden p-8 text-center">
+    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center">
+      <svg class="w-8 h-8 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <h3 class="font-heading text-xl font-extrabold tracking-tight mb-2">
+      You're on the list!
+    </h3>
+    <p class="text-sm text-slate-600 dark:text-slate-400">
+      We'll reach out when AgentTrail Cloud launches.
+    </p>
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    var dialog = document.getElementById('waitlist-modal');
+    var form = document.getElementById('waitlist-form');
+    var formElement = document.getElementById('waitlist-form-element');
+    var successView = document.getElementById('waitlist-success');
+    var emailInput = document.getElementById('waitlist-email');
+    var companyInput = document.getElementById('waitlist-company');
+    var submitBtn = document.getElementById('waitlist-submit');
+    var submitText = document.getElementById('waitlist-submit-text');
+    var spinner = document.getElementById('waitlist-spinner');
+    var errorEl = document.getElementById('waitlist-error');
+    var closeBtn = document.getElementById('waitlist-close');
+
+    var lastTrigger = null;
+
+    // Open dialog on any [data-open-waitlist] click
+    document.addEventListener('click', function (e) {
+      var trigger = e.target.closest('[data-open-waitlist]');
+      if (trigger) {
+        e.preventDefault();
+        lastTrigger = trigger;
+        // Reset to form view
+        form.classList.remove('hidden');
+        successView.classList.add('hidden');
+        errorEl.classList.add('hidden');
+        emailInput.value = '';
+        companyInput.value = '';
+        submitBtn.disabled = false;
+        submitText.textContent = 'Get early access';
+        spinner.classList.add('hidden');
+        dialog.showModal();
+        // Focus email field after dialog opens
+        requestAnimationFrame(function () {
+          emailInput.focus();
+        });
+      }
+    });
+
+    // Close on backdrop click
+    dialog.addEventListener('mousedown', function (e) {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
+
+    // Close button
+    closeBtn.addEventListener('click', function () {
+      dialog.close();
+    });
+
+    // Return focus to trigger on close
+    dialog.addEventListener('close', function () {
+      if (lastTrigger) {
+        lastTrigger.focus();
+        lastTrigger = null;
+      }
+    });
+
+    // Form submission
+    formElement.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var email = emailInput.value.trim();
+      var company = companyInput.value.trim();
+
+      // Client-side validation
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      // Loading state
+      submitBtn.disabled = true;
+      submitText.textContent = 'Submitting…';
+      spinner.classList.remove('hidden');
+      errorEl.classList.add('hidden');
+
+      var body = { email: email };
+      if (company) {
+        body.company = company;
+      }
+
+      fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+        .then(function (resp) { return resp.json(); })
+        .then(function (data) {
+          if (data.success) {
+            form.classList.add('hidden');
+            successView.classList.remove('hidden');
+            // Auto close after 3 seconds
+            setTimeout(function () {
+              dialog.close();
+            }, 3000);
+          } else {
+            showError(data.error || 'Something went wrong. Try again.');
+            submitBtn.disabled = false;
+            submitText.textContent = 'Get early access';
+            spinner.classList.add('hidden');
+          }
+        })
+        .catch(function () {
+          showError('Something went wrong. Try again.');
+          submitBtn.disabled = false;
+          submitText.textContent = 'Get early access';
+          spinner.classList.add('hidden');
+        });
+    });
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.remove('hidden');
+    }
+  })();
+</script>

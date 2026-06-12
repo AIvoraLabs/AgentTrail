@@ -13,7 +13,7 @@ const plans = [
       'CLI audit tool',
       'Community support',
     ],
-    cta: 'Coming soon',
+    cta: 'Join waitlist',
   },
   {
     name: 'Growth',
@@ -27,7 +27,7 @@ const plans = [
       'Multi-agent dashboard',
       'Email support',
     ],
-    cta: 'Coming soon',
+    cta: 'Join waitlist',
   },
   {
     name: 'Scale',
@@ -41,7 +41,7 @@ const plans = [
       'Team dashboard',
       'Priority support',
     ],
-    cta: 'Coming soon',
+    cta: 'Join waitlist',
   },
   {
     name: 'Enterprise',
@@ -95,12 +95,23 @@ const plans = [
               </li>
             ))}
           </ul>
-          <a
-            href="#"
-            class="block text-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 border border-slate-300 dark:border-slate-700 hover:border-brand-500/50 text-slate-700 dark:text-slate-300"
-          >
-            {plan.cta}
-          </a>
+          {
+            plan.cta === 'Contact sales' ? (
+              <a
+                href="#"
+                class="block text-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 border border-slate-300 dark:border-slate-700 hover:border-brand-500/50 text-slate-700 dark:text-slate-300"
+              >
+                {plan.cta}
+              </a>
+            ) : (
+              <button
+                data-open-waitlist
+                class="block w-full text-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 border border-slate-300 dark:border-slate-700 hover:border-brand-500/50 text-slate-700 dark:text-slate-300 cursor-pointer"
+              >
+                {plan.cta}
+              </button>
+            )
+          }
         </div>
       ))}
     </div>

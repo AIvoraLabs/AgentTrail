@@ -1,0 +1,79 @@
+interface Env {
+  BREVO_API_KEY: string;
+  BREVO_LIST_ID: string;
+}
+
+export const onRequestPost: PagesFunction<Env> = async (context) => {
+  const { email, company } = await context.request.json() as { email?: string; company?: string };
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return new Response(JSON.stringify({ success: false, error: 'Invalid email address.' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const body: Record<string, unknown> = {
+    email,
+    listIds: [Number(context.env.BREVO_LIST_ID)],
+    updateEnabled: true,
+  };
+  if (company) {
+    body.attributes = { COMPANY: company };
+  }
+
+  try {
+    const resp = await fetch('https://api.brevo.com/v3/contacts', {
+      method: 'POST',
+      headers: {
+        'api-key': context.env.BREVO_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    // New contact created or updated
+    if (resp.status === 201 || resp.status === 204) {
+      return new Response(JSON.stringify({ success: true, message: "You're on the list. We'll reach out when AgentTrail Cloud launches." }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Treat duplicate contact as success (Brevo returns 400 with duplicate_parameter)
+    if (resp.status === 400) {
+      const errBody = await resp.json() as { code?: string; message?: string };
+      if (errBody?.code === 'duplicate_parameter') {
+        return new Response(JSON.stringify({ success: true, message: "You're on the list. We'll reach out when AgentTrail Cloud launches." }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    const errBody = await resp.text();
+    console.error('Brevo API error', resp.status, errBody);
+    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    console.error('Brevo fetch error', err);
+    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+};
+
+export const onRequestOptions: PagesFunction<Env> = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+};
