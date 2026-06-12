@@ -2,18 +2,14 @@ name: Deploy Landing
 
 on:
   push:
-    branches: [main]
+    branches: [main, prod]
     paths:
       - 'apps/landing/**'
       - 'pnpm-lock.yaml'
-      - '.github/workflows/deploy-landing.yml'
-      - '.github/workflows/ci.yml'
   pull_request:
-    branches: [main]
+    branches: [main, prod]
     paths:
       - 'apps/landing/**'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/deploy-landing.yml'
 
 env:
   PNPM_VERSION: "9.0.0"
@@ -51,11 +47,11 @@ jobs:
         run: pnpm --filter @agenttrail/landing build
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: |
-            pages deploy apps/landing/dist \
-              --project-name=agenttrail-landing \
-              --branch=${{ github.head_ref || github.ref_name }}
+        shell: bash
+        run: |
+          npx wrangler pages deploy apps/landing/dist \
+            --project-name=agenttrail \
+            --branch=${{ github.head_ref || github.ref_name }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
