@@ -58,8 +58,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('Waitlist API error', err);
-    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Waitlist API error:', msg);
+    return new Response(JSON.stringify({ success: false, error: msg }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
