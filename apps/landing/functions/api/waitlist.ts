@@ -4,6 +4,14 @@ interface Env {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
+  if (!context.env?.BREVO_API_KEY || !context.env?.BREVO_LIST_ID) {
+    console.error('Missing BREVO_API_KEY or BREVO_LIST_ID in environment');
+    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const raw = await context.request.text();
     const { email, company } = JSON.parse(raw) as { email?: string; company?: string };
@@ -61,6 +69,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Catch-all for any other Brevo response (401, 403, 429, 5xx, etc.)
+    const errText = await resp.text();
+    console.error('Brevo API error', resp.status, errText);
+    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('Waitlist API error:', msg);

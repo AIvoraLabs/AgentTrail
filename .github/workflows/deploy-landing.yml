@@ -3,12 +3,12 @@ name: Deploy Landing
 on:
   workflow_dispatch:
   push:
-    branches: [main, prod]
+    branches: [prod]
     paths:
       - 'apps/landing/**'
       - 'pnpm-lock.yaml'
   pull_request:
-    branches: [main, prod]
+    branches: [prod]
     paths:
       - 'apps/landing/**'
 
