@@ -38,3 +38,4 @@ coverage/
 
 # Temp
 .tmp/
+.wrangler
