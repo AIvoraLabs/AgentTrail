@@ -54,9 +54,10 @@ jobs:
         run: pnpm --filter @agenttrail/landing build
 
       - name: Deploy to Cloudflare Pages
+        working-directory: apps/landing
         shell: bash
         run: |
-          npx wrangler pages deploy apps/landing/dist \
+          npx wrangler pages deploy dist \
             --project-name=agenttrail \
             --branch=${{ github.head_ref || github.ref_name }}
         env:
