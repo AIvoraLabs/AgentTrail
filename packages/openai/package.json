@@ -1,6 +1,6 @@
 {
   "name": "@aivoralabs/agenttrail-openai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAI SDK wrapper for AgentTrail audit receipts",
   "license": "MIT",
   "type": "module",

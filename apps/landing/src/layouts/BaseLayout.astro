@@ -84,6 +84,59 @@ const { title, description } = Astro.props;
       }
     })} />
 
+    <!-- Organization JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "AivoraLabs",
+      "url": "https://agenttrail.aivoralabs.org",
+      "logo": "https://agenttrail.aivoralabs.org/og-image.png",
+      "sameAs": [
+        "https://github.com/AIvoraLabs/agenttrail",
+        "https://www.npmjs.com/package/@aivoralabs/agenttrail"
+      ]
+    })} />
+
+    <!-- FAQPage JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is EU AI Act Article 12?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Article 12 of the EU AI Act requires that high-risk AI systems automatically log every interaction with tamper-proof records, including timestamps, inputs, outputs, and the identity of any human oversight. AgentTrail implements this requirement with cryptographic audit receipts."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does AgentTrail generate tamper-proof audit trails?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AgentTrail uses a SHA-256 hash chain and Ed25519 digital signatures. Each receipt includes the hash of the previous receipt, making any modification detectable. An auditor can verify the entire chain offline using the CLI tool."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is AgentTrail open source?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. AgentTrail is fully open source under the MIT license. The core SDK, OpenAI wrapper, Vercel AI middleware, and CLI tool are all available on GitHub at https://github.com/AIvoraLabs/agenttrail."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does AgentTrail store my data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. AgentTrail is a local-first SDK. Audit receipts are stored in your own infrastructure — local filesystem, S3, or GCS. AgentTrail never sees or stores your data."
+          }
+        }
+      ]
+    })} />
+
     <!-- Theme FOUC prevention -->
     <script is:inline>
       (function () {

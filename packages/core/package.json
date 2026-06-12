@@ -1,6 +1,6 @@
 {
   "name": "@aivoralabs/agenttrail",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Compliance receipts for AI agents — EU AI Act Article 12 audit trails",
   "license": "MIT",
   "type": "module",

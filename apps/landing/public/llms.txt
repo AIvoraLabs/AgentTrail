@@ -1,0 +1,23 @@
+# AgentTrail
+
+AgentTrail is an open-source SDK for generating cryptographic audit trails for AI agents, enabling compliance with EU AI Act Article 12.
+
+## What it does
+- Intercepts every AI agent LLM call
+- Generates a tamper-proof receipt: SHA-256 hash chain + Ed25519 signature
+- Stores receipts as JSONL in your own infrastructure (local, S3, GCS)
+- Provides a CLI tool for auditors to verify chain integrity offline
+
+## Packages
+- @aivoralabs/agenttrail — Core SDK
+- @aivoralabs/agenttrail-openai — OpenAI SDK wrapper
+- @aivoralabs/agenttrail-vercel — Vercel AI SDK middleware
+- @aivoralabs/agenttrail-cli — Standalone CLI auditor tool
+
+## License
+MIT
+
+## Links
+- Homepage: https://agenttrail.aivoralabs.org
+- GitHub: https://github.com/AIvoraLabs/agenttrail
+- npm: https://www.npmjs.com/package/@aivoralabs/agenttrail
