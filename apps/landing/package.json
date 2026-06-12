@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && cp -r functions dist/functions",
     "preview": "astro preview",
     "clean": "rm -rf dist"
   },
