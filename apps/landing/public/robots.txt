@@ -2,12 +2,8 @@ User-agent: *
 Allow: /
 Sitemap: https://agenttrail.aivoralabs.org/sitemap-index.xml
 
-User-agent: GPTBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
+# AI crawlers explicitly allowed for indexing (non-training)
+# GPTBot, ClaudeBot, Google-Extended are managed by Cloudflare's managed rules
 User-agent: PerplexityBot
 Allow: /
 
