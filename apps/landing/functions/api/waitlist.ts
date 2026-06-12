@@ -4,19 +4,9 @@ interface Env {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  // DEBUG: dump env to diagnose missing vars
-  const envDebug = {
-    hasEnv: typeof context.env !== 'undefined' && context.env !== null,
-    envType: typeof context.env,
-    envKeys: context.env ? Object.keys(context.env) : [],
-    envIsNull: context.env === null,
-    brevoApiKeyType: typeof context.env?.BREVO_API_KEY,
-    brevoListIdType: typeof context.env?.BREVO_LIST_ID,
-  };
-
   if (!context.env?.BREVO_API_KEY || !context.env?.BREVO_LIST_ID) {
-    console.error('Missing BREVO_API_KEY or BREVO_LIST_ID in environment', JSON.stringify(envDebug));
-    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.', debug: envDebug }), {
+    console.error('Missing BREVO_API_KEY or BREVO_LIST_ID in environment');
+    return new Response(JSON.stringify({ success: false, error: 'Something went wrong. Try again.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
