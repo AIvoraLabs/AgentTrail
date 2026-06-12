@@ -41,6 +41,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: Create Cloudflare Pages project if not exists
+        run: npx wrangler pages project create agenttrail --production-branch prod || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
