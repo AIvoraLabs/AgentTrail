@@ -8,15 +8,19 @@ AgentTrail is an open-source SDK that generates tamper-proof cryptographic audit
 LLM Call → SDK intercepts → SHA-256 hash chain → Ed25519 signature → Your storage → CLI verification
 ```
 
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/@aivoralabs/agenttrail)](https://www.npmjs.com/package/@aivoralabs/agenttrail)
+[![Landing](https://img.shields.io/badge/web-agenttrail.aivoralabs.org-8B5CF6)](https://agenttrail.aivoralabs.org)
+
 ---
 
 ## The Problem
 
-The EU AI Act requires that every high-risk AI system automatically records its interactions — tamper-proof, auditable, and independently verifiable (Article 12). 
+The EU AI Act requires that every high-risk AI system automatically records its interactions — tamper-proof, auditable, and independently verifiable (Article 12).
 
 Companies today have two bad options:
 
-1. **Consulting-driven compliance** — Big 4 firms charge €1,400–€2,600/day to produce manual audit documentation. It's expensive, slow, and doesn't scale with your AI.
+1. **Consulting-driven compliance** — Big 4 firms charge EUR 1,400–2,600/day to produce manual audit documentation. It's expensive, slow, and doesn't scale with your AI.
 
 2. **Technical logs** — Splunk, Datadog, ELK. They give you raw logs that your engineering team understands but no auditor will accept as a compliance artifact.
 
@@ -86,12 +90,12 @@ That's it. Every decision is now traceable, verifiable, and audit-ready.
 
 | | AgentTrail | OneTrust | Splunk | ServiceNow |
 |---|---|---|---|---|
-| **Purpose-built for AI agents** | ✅ Yes | ❌ No (GRC platform) | ❌ No (log aggregator) | ❌ No (ITSM) |
-| **Open-source core** | ✅ MIT | ❌ Proprietary | ❌ Proprietary | ❌ Proprietary |
-| **Price** | $99/agent/month | €50K+/year | $2K–$4K/month | Enterprise pricing |
+| **Purpose-built for AI agents** | Yes | No (GRC platform) | No (log aggregator) | No (ITSM) |
+| **Open-source core** | MIT | Proprietary | Proprietary | Proprietary |
+| **Price** | $99/agent/month | EUR 50K+/year | $2K–$4K/month | Enterprise pricing |
 | **Implementation time** | Minutes | 3–6 months | Weeks | Weeks |
-| **Offline verification** | ✅ CLI, full offline | ❌ Cloud-dependent | ❌ Cloud-dependent | ❌ Cloud-dependent |
-| **Audit-ready output** | ✅ HTML report | ✅ Yes | ❌ Raw logs | ❌ Raw logs |
+| **Offline verification** | CLI, full offline | Cloud-dependent | Cloud-dependent | Cloud-dependent |
+| **Audit-ready output** | HTML report | Yes | Raw logs | Raw logs |
 
 OneTrust is built for enterprise GRC — risk assessments, data mapping, vendor management. It's overkill if all you need is Article 12 compliance for your AI agents.
 
@@ -101,13 +105,26 @@ AgentTrail does one thing: cryptographically prove what your AI agents decided, 
 
 ---
 
+## Website
+
+The AgentTrail landing page is built with [Astro](https://astro.build) 6 and [Tailwind CSS](https://tailwindcss.com) v4. It includes product overview, compliance use cases, integration docs preview, and a visual breakdown of the hash chain architecture.
+
+- **URL:** [agenttrail.aivoralabs.org](https://agenttrail.aivoralabs.org)
+- **Source:** `apps/landing/` in this repository
+- **Stack:** Astro 6, Tailwind CSS v4, static site generation
+- **Deployment:** Cloudflare Pages (via GitHub Actions)
+
+The site is fully static, SEO-optimized with [@astrojs/sitemap](https://docs.astro.build/en/guides/integrations-guide/sitemap/), and features an OG image and shield SVG favicon for professional sharing on social platforms and messaging apps.
+
+---
+
 ## Open Source — MIT
 
 The SDK is and always will be MIT. Free to use, audit, fork, and integrate.
 
 AgentTrail Cloud (dashboard, analytics, SSO) is a separate paid product for teams that want managed compliance at scale.
 
-[agenttrail.cloud](https://agenttrail.cloud) · [Docs →](#) · [Contributing →](CONTRIBUTING.md)
+[agenttrail.cloud](https://agenttrail.cloud) · [Docs](https://agenttrail.aivoralabs.org) · [Contributing](CONTRIBUTING.md)
 
 ---
 
@@ -118,12 +135,6 @@ AgentTrail Cloud (dashboard, analytics, SSO) is a separate paid product for team
 | Q3 2026 | Roughtime timestamps (Google's signed timestamp protocol) |
 | Q4 2026 | Compliance Mode — strict / permissive configurable per-agent |
 | Q1 2027 | RFC 3161 TSA integration (trusted timestamp authority) |
-
----
-
-## Badges
-
-[MIT License](LICENSE) · [npm version](https://www.npmjs.com/package/@aivoralabs/agenttrail) · Build status · Coverage
 
 ---
 

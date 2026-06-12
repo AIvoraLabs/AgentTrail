@@ -3,48 +3,45 @@ const plans = [
   {
     name: 'Starter',
     price: '$99',
-    sub: '/agent / month',
+    sub: '/month · up to 3 agents',
     description: 'For small teams and early-stage AI deployments.',
     features: [
-      'SDK with full receipt generation',
+      'SDK receipt generation',
       'SHA-256 hash chaining',
       'Ed25519 digital signatures',
       '10,000 receipts / month',
-      'CLI audit report',
+      'CLI audit tool',
       'Community support',
     ],
     cta: 'Coming soon',
-    recommended: false,
   },
   {
     name: 'Growth',
     price: '$299',
-    sub: '/month · up to 3 agents',
+    sub: '/month · up to 10 agents',
     description: 'For growing teams with multiple agents in production.',
     features: [
       'Everything in Starter',
-      'Up to 3 agents',
+      'Up to 10 agents',
       '50,000 receipts / month',
       'Multi-agent dashboard',
       'Email support',
     ],
     cta: 'Coming soon',
-    recommended: true,
   },
   {
     name: 'Scale',
     price: '$999',
-    sub: '/month · up to 10 agents',
+    sub: '/month · up to 50 agents',
     description: 'For organizations with multiple AI systems.',
     features: [
       'Everything in Growth',
-      'Up to 10 agents',
+      'Up to 50 agents',
       'Unlimited receipts',
       'Team dashboard',
       'Priority support',
     ],
     cta: 'Coming soon',
-    recommended: false,
   },
   {
     name: 'Enterprise',
@@ -53,14 +50,12 @@ const plans = [
     description: 'For large-scale deployments with custom requirements.',
     features: [
       'Everything in Scale',
-      'Unlimited agents',
       'On-premise deployment',
       'SSO / SAML',
       'Custom integrations',
       'Dedicated support',
     ],
     cta: 'Contact sales',
-    recommended: false,
   },
 ];
 ---
@@ -75,16 +70,15 @@ const plans = [
       <p class="text-slate-600 dark:text-slate-400">
         The SDK is free and open-source (MIT). AgentTrail Cloud adds dashboard, analytics, and SSO for teams.
       </p>
+      <!-- Pricing footnote -->
+      <p class="mt-6 text-sm text-slate-500 dark:text-slate-500 max-w-2xl mx-auto">
+        🧪 The SDK is open-source (MIT) and free to use today. AgentTrail Cloud (paid plans above) is in development — no payment system is active yet. You can use the full SDK right now with zero cost.
+      </p>
     </div>
 
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {plans.map((plan) => (
-        <div class={`rounded-2xl p-6 border ${plan.recommended ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-900/50 relative flex flex-col`}>
-          {plan.recommended && (
-            <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-brand-600 text-white text-xs font-semibold rounded-full">
-              Recommended
-            </span>
-          )}
+        <div class="rounded-2xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 relative flex flex-col">
           <h3 class="font-heading text-lg font-bold mb-1">{plan.name}</h3>
           <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">{plan.description}</p>
           <div class="mb-6">
@@ -103,7 +97,7 @@ const plans = [
           </ul>
           <a
             href="#"
-            class={`block text-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${plan.recommended ? 'bg-brand-600 hover:bg-brand-700 text-white' : 'border border-slate-300 dark:border-slate-700 hover:border-brand-500/50 text-slate-700 dark:text-slate-300'}`}
+            class="block text-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 border border-slate-300 dark:border-slate-700 hover:border-brand-500/50 text-slate-700 dark:text-slate-300"
           >
             {plan.cta}
           </a>
